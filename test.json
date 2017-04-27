@@ -1,0 +1,28 @@
+{
+  "action": "get scan results",
+  "app_config": null,
+  "asset_id": "96",
+  "config": {
+    "app_version": "1.1",
+    "appname": "-",
+    "directory": "securitycenter_421c4b26-2254-41f0-8544-5619af2afa42",
+    "ingest": {
+      "start_time_epoch_utc": null
+    },
+    "main_module": "securitycenter_connector.pyc",
+    "sc_instance": "172.26.24.244",
+    "sc_password": "7srgbZGENW7AChkuIGp0pA==",
+    "sc_username": "mweinberger"
+  },
+  "connector_run_id": 36,
+  "container_id": 549,
+  "debug_level": 3,
+  "dec_key": "96",
+  "identifier": "get_scan_results",
+  "parameters": [
+    {
+      "etime": "65232",
+      "stime": "14500"
+    }
+  ]
+}

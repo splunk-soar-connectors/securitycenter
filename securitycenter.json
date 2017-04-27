@@ -1,0 +1,90 @@
+{
+    "appid"       : "421c4b26-2254-41f0-8544-5619af2afa42",
+    "name"      : "SecurityCenter",
+    "description" : "Take action with Tenable's SecurityCenter",
+    "publisher": "Phantom",
+    "package_name": "phantom_securitycenter",
+    "type": "vulnerability scanner",
+    "license": "Copyright (c) Phantom Cyber Corporation 2016",
+    "main_module" : "securitycenter_connector.pyc",
+    "app_version": "1.3",
+    "utctime_updated": "2016-05-27T00:32:59.000000Z",
+    "product_vendor": "Tenable",
+    "product_name": "securitycenter",
+    "product_version_regex": ".*",
+    "min_phantom_version": "1.0.240",
+    "logo": "securitycenter.png",
+    "configuration": {
+          "sc_instance": {
+            "description": "IP of FQDN of your SecurityCenter instance",
+            "data_type": "string",
+            "required": true
+          },
+          "sc_username": {
+            "description": "Username",
+            "data_type": "string",
+            "required": true
+          },
+	      "sc_password": {
+            "description": "Password",
+            "data_type": "password",
+            "required": true
+          }
+    },
+    "actions": [
+      {
+        "action": "test connectivity",
+        "description": "Validate the asset configuration for connectivity.",
+        "type": "test",
+        "identifier": "test_asset_connectivity",
+        "read_only": true,
+        "parameters": {
+        },
+        "output": [],
+        "versions":"EQ(*)"
+      },
+      {
+        "action": "get scan results",
+        "description": "Get scan results within a certain time window",
+        "type": "investigate",
+        "identifier": "get_scan_results",
+        "read_only": true,
+        "parameters": {
+          "stime": {
+            "description": "Start time",
+            "data_type": "string",
+            "primary": true,
+            "required": true
+          },
+          "etime": {
+            "description": "End time",
+            "data_type": "string",
+            "primary": true,
+            "required": true
+          }
+        },
+        "render": {
+          "type": "custom",
+          "width": 10,
+          "height": 5,
+          "view": "ssmachine_view.display_scans",
+          "title": "Scan Results"
+        },
+        "output": [
+          {
+            "data_path": "action_result.status",
+            "data_type": "string"
+          },
+          {
+            "data_path": "action_result.message",
+            "data_type": "string"
+          },
+          {
+            "data_path": "action_result.summary.name",
+            "data_type": "string"
+          }
+        ],
+        "versions":"EQ(*)"
+      }
+    ]
+}
