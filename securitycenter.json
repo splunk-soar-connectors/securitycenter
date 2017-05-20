@@ -16,9 +16,17 @@
     "logo": "securitycenter.png",
     "configuration": {
           "sc_instance": {
-            "description": "IP of FQDN of your SecurityCenter instance",
+            "description": "URL for your SecurityCenter instance",
             "data_type": "string",
-            "required": true
+            "required": true,
+            "order": 0
+          },
+          "verify_server_cert": {
+            "data_type": "boolean",
+            "description": "Verify server certificate",
+            "required": true,
+            "order": 1,
+            "default": false
           },
           "sc_username": {
             "description": "Username",
@@ -44,47 +52,222 @@
         "versions":"EQ(*)"
       },
       {
-        "action": "get scan results",
-        "description": "Get scan results within a certain time window",
-        "type": "investigate",
-        "identifier": "get_scan_results",
-        "read_only": true,
-        "parameters": {
-          "stime": {
-            "description": "Start time",
-            "data_type": "string",
-            "primary": true,
-            "required": true
+      "action": "scan ip",
+      "description": "Runs a scan against a specified host.",
+      "type": "investigate",
+      "identifier": "scan_ip",
+      "read_only": true,
+      "parameters": {
+        "target_to_scan": {
+          "description": "IP(s) to scan - multiple targets separated by commas, no spaces",
+          "data_type": "string",
+          "contains": [ "ip" ],
+          "primary": true,
+          "required": true
           },
-          "etime": {
-            "description": "End time",
-            "data_type": "string",
-            "primary": true,
-            "required": true
-          }
-        },
-        "render": {
-          "type": "custom",
-          "width": 10,
-          "height": 5,
-          "view": "ssmachine_view.display_scans",
-          "title": "Scan Results"
-        },
-        "output": [
-          {
+        "scan_policy_id": {
+          "description": "SecurityCenter Scan Policy ID to use",
+          "data_type": "numeric",
+          "contains": [ "SecurityCenter Scan Policy ID"],
+          "required": true
+        }
+      },
+      "render": {
+        "width": 12,
+        "title": "Scan IP Info",
+        "type": "table",
+        "height": 5
+      },
+      "output": [
+        {
             "data_path": "action_result.status",
             "data_type": "string"
-          },
-          {
+        },
+        {
             "data_path": "action_result.message",
             "data_type": "string"
-          },
-          {
+        },
+        {
             "data_path": "action_result.summary.name",
             "data_type": "string"
-          }
+        },
+        {
+          "data_path": "action_result.data.*.id",
+          "data_type": "string",
+          "contains": [ "SecurityCenter Scan ID"],
+          "column_name": "Scan ID",
+          "column_order": 6
+        },
+        {
+          "data_path": "action_result.data.*.scanResultID",
+          "data_type": "string",
+          "contains": [ "SecurityCenter Scan Result ID"],
+          "column_name": "Scan Result ID",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.data.*.ipList",
+          "data_type": "string",
+          "contains": [ "ip","hostname"],
+          "column_name": "Scan Target(s)",
+          "column_order": 1
+        },
+        {
+          "data_path": "action_result.data.*.type",
+          "data_type": "string",
+          "contains": [],
+          "column_name": "Scan Type",
+          "column_order": 2
+        },
+        {
+          "data_path": "action_result.data.*.policy.id",
+          "data_type": "string",
+          "contains": [ "SecurityCenter Scan Policy ID"],
+          "column_name": "Scan Policy ID",
+          "column_order": 3
+        },
+        {
+          "data_path": "action_result.data.*.policy.name",
+          "data_type": "string",
+          "contains": [],
+          "column_name": "Scan Policy Name",
+          "column_order": 4
+        },
+        {
+          "data_path": "action_result.data.*.name",
+          "data_type": "string",
+          "contains": [],
+          "column_name": "Scan Name",
+          "column_order": 5
+        }
+      ],
+      "versions": "EQ(*)"
+      },
+      {
+      "action": "get ip vulnerabilities",
+      "description": "Query SecurityCenter for a list of Vulnerabilities associated with an IP",
+      "type": "investigate",
+      "identifier": "get_ip_vulnerabilities",
+      "read_only": true,
+      "parameters": {
+        "ip_to_query": {
+        "description": "IP of host to query",
+        "data_type": "string",
+        "contains": [
+          "ip"
         ],
-        "versions":"EQ(*)"
+        "primary": true,
+        "required": true
+        }
+      },
+      "render": {
+        "width": 18,
+        "title": "IP Vulnerability Information",
+        "type": "table",
+        "height": 5
+      },
+      "output": [
+        {
+            "data_path": "action_result.status",
+            "data_type": "string"
+        },
+        {
+            "data_path": "action_result.message",
+            "data_type": "string"
+        },
+        {
+            "data_path": "action_result.summary.total_vulnerabilities",
+            "data_type": "string"
+        },
+        {
+            "data_path": "action_result.summary.critical_vulns",
+            "data_type": "string"
+        },
+        {
+            "data_path": "action_result.summary.high_vulns",
+            "data_type": "string"
+        },
+        {
+            "data_path": "action_result.summary.medium_vulns",
+            "data_type": "string"
+        },
+        {
+            "data_path": "action_result.summary.low_vulns",
+            "data_type": "string"
+        },
+        {
+            "data_path": "action_result.summary.info_vulns",
+            "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.results.*.severity.name",
+          "data_type": "string",
+          "contains": [],
+          "column_name": "Vuln Severity",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.data.*.results.*.pluginID",
+          "data_type": "string",
+          "contains": [],
+          "column_name": "Plugin ID",
+          "column_order": 1
+        },
+        {
+          "data_path": "action_result.data.*.results.*.name",
+          "data_type": "string",
+          "contains": [],
+          "column_name": "Plugin Name",
+          "column_order": 2
+        },
+        {
+          "data_path": "action_result.data.*.results.*.family.name",
+          "data_type": "string",
+          "contains": [],
+          "column_name": "Plugin Family Name",
+          "column_order": 3
+        }
+        ],
+      "versions": "EQ(*)"
+      },
+      {
+      "action": "list scan policies",
+      "description": "Lists the scan policies available in Tenable SecurityCenter",
+      "type": "generic",
+      "identifier": "list_scan_policies",
+      "read_only": true,
+      "parameters": {},
+      "render": {
+        "width": 12,
+        "title": "SecurityCenter Policies",
+        "type": "table",
+        "height": 5
+      },
+      "output": [
+        {
+            "data_path": "action_result.status",
+            "data_type": "string"
+        },
+        {
+            "data_path": "action_result.message",
+            "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.usable.*.id",
+          "data_type": "string",
+          "contains": [ "SecurityCenter Scan Policy ID"],
+          "column_name": "Usable Scan Policy ID",
+          "column_order": 0
+        },
+        {
+          "data_path": "action_result.data.*.usable.*.name",
+          "data_type": "string",
+          "contains": [],
+          "column_name": "Scan Policy Name",
+          "column_order": 1
+        }
+      ],
+      "versions": "EQ(*)"
       }
     ]
 }

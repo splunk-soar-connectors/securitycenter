@@ -1,7 +1,7 @@
 # --
-# File: ssmachine_connector.py
+# File: securitycenter_connector.py
 #
-# Copyright (c) Phantom Cyber Corporation, 2016
+# Copyright (c) Phantom Cyber Corporation, 2017
 #
 # This unpublished material is proprietary to Phantom Cyber.
 # All rights reserved. The methods and
@@ -13,35 +13,43 @@
 # --
 
 # Phantom App imports
-from securitycenter_consts import *
 import phantom.app as phantom
 from phantom.base_connector import BaseConnector
 from phantom.action_result import ActionResult
 
 # Imports local to this App
 import requests
-import time
+import datetime
+import json
+from securitycenter_consts import *
+
 
 class SecurityCenterConnector(BaseConnector):
+
+    ACTION_ID_TEST_ASSET_CONNECTIVITY = "test_asset_connectivity"
+    ACTION_ID_SCAN_IP = "scan_ip"
+    ACTION_ID_LIST_SCAN_POLICIES = "list_scan_policies"
+    ACTION_ID_GET_IP_VULNERABILITIES = "get_ip_vulnerabilities"
+
     def __init__(self):
 
         # Call the BaseConnectors init first
         super(SecurityCenterConnector, self).__init__()
 
-        self._headers = None
+        self._headers = {'Content-type': 'application/json'}
+        self._verify = None
+        self._json = dict()
+        self._cookies = None
 
     def initialize(self):
 
         config = self.get_config()
+        self._verify = config.get("verify_server_cert")
+        self._rest_url = config.get("sc_instance")
+        self._json['username'] = config.get("sc_username")
+        self._json['password'] = config.get('sc_password')
 
-        self._rest_url = config.get("sc_instnace")
-        json = dict()
-        json['username'] = config.get("sc_username")
-        json['password'] = config.get('sc_password')
-        ret_val, resp = self._make_rest_call('/token', self, json=json, method='post')
-        self._headers = {'X-Securitycenter': resp.json()['response']['token']}
-        self._cookie = resp.cookie
-        return ret_val
+        return phantom.APP_SUCCESS
 
     def finalize(self):
 
@@ -49,22 +57,9 @@ class SecurityCenterConnector(BaseConnector):
         ret_val, resp = self._make_rest_call('/token', self, headers=self._headers, method='delete')
         return ret_val
 
-    def _parse_response(self, result, r):
+    def _make_rest_call(self, endpoint, result, params={}, headers={}, json={}, method="get", cookies={}):
 
-        # It's ok if r.text is None, dump that, if the result object supports recording it
-        if hasattr(result, 'add_debug_data'):
-            result.add_debug_data({'r_text': r.text if r else 'r is None'})
-
-        if not (200 <= r.status_code < 300):
-            return (result.set_status(phantom.APP_ERROR,
-                                     "Call returned error, status_code: {0}, data: {1}".format(r.status_code, r.content)),
-                                     r.status_code, r.headers.get('content-type'), r.content)
-
-        return phantom.APP_SUCCESS, r
-
-    def _make_rest_call(self, endpoint, result, params={}, headers={}, json={}, cookie={}, method="get", stream=False):
-
-        url = "{0}{1}".format(self._rest_url, endpoint)
+        url = "{0}/rest{1}".format(self._rest_url, endpoint)
 
         if self._headers is not None:
             (headers.update(self._headers))
@@ -75,75 +70,150 @@ class SecurityCenterConnector(BaseConnector):
             return result.set_status(phantom.APP_ERROR, "Invalid method call: {0} for requests module".format(method)), None
 
         try:
-            r = request_func(url, headers=headers, params=params, json=json, cookie=cookie, stream=stream)
+            r = request_func(url, headers=headers, params=params, json=json, cookies=cookies, verify=self._verify)
         except Exception as e:
-            return result.set_status(phantom.APP_ERROR, "REST Api to server failed", e), None
+            return result.set_status(phantom.APP_ERROR, "REST API to server failed", e), None
+        try:
+            self._cookies = r.cookies
+        except Exception as e:
+            return result.set_status(phantom.APP_ERROR, "Failed to set cookies", e), None
 
-        ret_val, resp = self._parse_response(result, r)
+        try:
+            resp_json = r.json()
+        except Exception as e:
+            self.debug_print(r)
+            return (result.set_status(phantom.APP_ERROR, "Error converting response to json"), None)
 
+        # ret_val, resp = self._parse_response(result, r)
         # Any http or parsing error is handled by the _parse_response function
-        if phantom.is_fail(ret_val):
-            return result.get_status(), resp.content
+        # if phantom.is_fail(ret_val):
+        #    return result.get_status(), resp.content
 
-        return phantom.APP_SUCCESS, resp
+        return phantom.APP_SUCCESS, resp_json
+
+    def _get_token(self):
+        self.save_progress("Getting token for session...")
+        ret_val, resp_json = self._make_rest_call('/token', self, json=self._json, method='post')
+        if resp_json:
+            self._headers.update({'X-SecurityCenter': str(resp_json['response']['token'])})
+        return
 
     def _test_connectivity(self):
 
-        self.save_progress("Checking connectivity to your SecurityCenter instnace...")
-
-        if not self._token:
+        self.save_progress("Checking connectivity to your SecurityCenter instance...")
+        self._get_token()
+        ret_val, resp_json = self._make_rest_call('/user', self, cookies=self._cookies)
+        if phantom.is_fail(ret_val):
             self.append_to_message('Test connectivity failed')
             return self.get_status()
+        else:
+            self.debug_print(self._headers["X-SecurityCenter"])
+            self.debug_print("In test connectivity, just before returning")
+            return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to SecurityCenter was successful.")
 
-        return self.set_status_save_progress(ret_val, "Connectivity to SecurityCenter was successful.")
-
-    def _handle_scan_results(self, param):
-
-        action_result = ActionResult(dict(param))
-        self.add_action_result(action_result)
-
-        params = dict()
-        params['start_time'] = param["stime"]
-        params['end_time'] = param["etime"]
-
-        ret_val, scans = self._make_rest_call('/scanResult', action_result, params, method='get')
-        for scan in scans:
-            json={
-
-            }
-            ret_val, vulns = self._make_rest_call('/analysis', action_result, params, method='post')
-        if (phantom.is_fail(ret_val)):
-            return action_result.get_status()
-
-        # Find a good way to display scan results that come from Json or something
-
-        return action_result.get_status()
-
-    def _handle_scan_targets(self, param):
+    def _scan_ip(self, param):
 
         action_result = ActionResult(dict(param))
         self.add_action_result(action_result)
+        self._get_token()
+        # target to scan
+        host_to_scan = param[TARGET_TO_SCAN]
+        scan_policy_id = param[SCAN_POLICY]
 
-        json = dict()
-        json['ips'] = param["ips"]
-        timeout = param['timeout']
-        ret_val, scan_properties = self._make_rest_call('/scan', action_result, json=json, method='post')
-        scanID = scan_properties.json()['response']['id']
-        ret_val, scan_result_properties = self._make_rest_call('/scan/'+scanID+'/launch', action_result, json=json, method='post')
-        scanresultID = scan_result_properties.json()['response']['id']
-        while timeout > 0:
-            ret_val, scan_result_status = self._make_rest_call('/scanResult/'+scanresultID, action_result, method='get')
-            if scan_result_status.json()['response']['status'] in ['completed', 'partial']:
-                ret_val, scan_results = self._make_rest_call('/analysis', action_result, json=json, method='post')
-                if (phantom.is_fail(ret_val)):
-                    return action_result.get_status()
-                return phantom.APP_SUCCESS, scan_results
-            time.sleep(30)
-            timeout -= .5
+        # Calculate scan start time with a defined delay
+        scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
+        scan_start = scan_start.strftime(DATETIME_FORMAT)
+        # can probably remove some of these options
+        scan_data = {"name": "Scan Launched from Phantom", "repository": {"id": 1}, "schedule": {"start": scan_start,
+                                                                      "repeatRule": "FREQ=NOW;INTERVAL=1",
+                                                                      "type": "now"},
+                    "reports": [], "type": "policy", "policy": {"id": scan_policy_id}, "zone": {"id": -1},
+                    "ipList": str(host_to_scan), "credentials": [], "maxScanTime": "unlimited"}
+
+        ret_val, resp_json = self._make_rest_call('/scan', self, json=scan_data, method='post', cookies=self._cookies)
 
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
-        return action_result.get_status()
+
+        action_result.add_data(resp_json["response"])
+        action_result.set_summary({'name': resp_json["response"]["name"]})
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
+    def _get_ip_vulnerabilities(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+        self._get_token()
+
+        ip_to_query = param[IP_TO_QUERY]
+
+        query_string = {
+                      "query": {
+                        "name": "",
+                        "description": "",
+                        "context": "",
+                        "status": -1,
+                        "createdTime": 0,
+                        "modifiedTime": 0,
+                        "groups": [],
+                        "type": "vuln",
+                        "tool": "sumid",
+                        "sourceType": "cumulative",
+                        "startOffset": 0,
+                        "endOffset": 50,
+                        "filters": [
+                          {
+                            "id": "ip",
+                            "filterName": "ip",
+                            "operator": "=",
+                            "type": "vuln",
+                            "isPredefined": True,
+                            "value": str(ip_to_query)
+                          }
+                        ],
+                        "sortColumn": "severity",
+                        "sortDirection": "desc",
+                        "vulnTool": "sumid"
+                      },
+                      "sourceType": "cumulative",
+                      "sortField": "severity",
+                      "sortDir": "desc", "columns": [],
+                      "type": "vuln"
+                    }
+
+        ret_val, resp_json = self._make_rest_call("/analysis", self, json=query_string, method="post", cookies=self._cookies)
+
+        if (phantom.is_fail(ret_val)):
+            return action_result.get_status()
+
+        action_result.add_data(resp_json["response"])
+        action_result.set_summary({'total_vulnerabilities': resp_json["response"]["totalRecords"]})
+
+        crit_vulns = high_vulns = med_vulns = low_vulns = info_vulns = 0
+        for vuln in resp_json["response"]["results"]:
+            if vuln["severity"]["id"] == '4':
+                crit_vulns += 1
+            elif vuln["severity"]["id"] == '3':
+                high_vulns += 1
+            elif vuln["severity"]["id"] == '2':
+                med_vulns += 1
+            elif vuln["severity"]["id"] == '1':
+                low_vulns += 1
+            elif vuln["severity"]["id"] == '0':
+                info_vulns += 1
+        action_result.update_summary({'critical_vulns': crit_vulns, 'high_vulns': high_vulns, 'medium_vulns': med_vulns,
+                                      'low_vulns': low_vulns, 'info_vulns': info_vulns})
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
+    def _list_scan_policies(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+        self._get_token()
+        ret_val, resp_json = self._make_rest_call("/policy", self, cookies=self._cookies)
+        if (phantom.is_fail(ret_val)):
+            return action_result.get_status()
+        action_result.add_data(resp_json["response"])
+
+        return action_result.set_status(phantom.APP_SUCCESS)
 
     def handle_action(self, param):
 
@@ -154,9 +224,13 @@ class SecurityCenterConnector(BaseConnector):
 
         self.debug_print("action_id", self.get_action_identifier())
 
-        if (action_id == "get_scan_results"):
-            ret_val = self._handle_scan_results(param)
-        elif (action_id == phantom.ACTION_ID_TEST_ASSET_CONNECTIVITY):
+        if (action_id == self.ACTION_ID_GET_IP_VULNERABILITIES):
+            ret_val = self._get_ip_vulnerabilities(param)
+        if (action_id == self.ACTION_ID_SCAN_IP):
+            ret_val = self._scan_ip(param)
+        if (action_id == self.ACTION_ID_LIST_SCAN_POLICIES):
+            ret_val = self._list_scan_policies(param)
+        elif (action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY):
             ret_val = self._test_connectivity()
 
         return ret_val
@@ -165,7 +239,10 @@ class SecurityCenterConnector(BaseConnector):
 if __name__ == '__main__':
 
     import sys
-    import json
+    import pudb
+
+    # Breakpoint at runtime
+    pudb.set_trace()
 
     if (len(sys.argv) < 2):
         print "No test json specified as input"
@@ -175,7 +252,6 @@ if __name__ == '__main__':
         in_json = f.read()
         in_json = json.loads(in_json)
         print(json.dumps(in_json, indent=4))
-
         connector = SecurityCenterConnector()
         connector.print_progress_message = True
         ret_val = connector._handle_action(json.dumps(in_json), None)
