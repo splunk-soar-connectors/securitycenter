@@ -28,17 +28,15 @@ class SecurityCenterConnector(BaseConnector):
 
     ACTION_ID_TEST_ASSET_CONNECTIVITY = "test_asset_connectivity"
     ACTION_ID_SCAN_IP = "scan_ip"
-    ACTION_ID_LIST_SCAN_POLICIES = "list_scan_policies"
-    ACTION_ID_GET_IP_VULNERABILITIES = "get_ip_vulnerabilities"
+    ACTION_ID_LIST_SCAN_POLICIES = "list_policies"
+    ACTION_ID_GET_IP_VULNERABILITIES = "list_vulnerabilities"
 
     def __init__(self):
 
         # Call the BaseConnectors init first
         super(SecurityCenterConnector, self).__init__()
 
-        self._headers = {'Content-type': 'application/json'}
         self._verify = None
-        self._json = dict()
         self._cookies = None
 
     def initialize(self):
@@ -46,37 +44,56 @@ class SecurityCenterConnector(BaseConnector):
         config = self.get_config()
         self._verify = config.get("verify_server_cert")
         self._rest_url = config.get("sc_instance")
-        self._json['username'] = config.get("sc_username")
-        self._json['password'] = config.get('sc_password')
 
+        self.session = requests.Session()
+        auth_data = {"username": config.get("sc_username"), "password": config.get("sc_password")}
+        self.session.headers = {'Content-type': 'application/json', 'accept': 'application/json'}
+
+        self.save_progress("Getting token for session...")
+        auth_resp = self.session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
+        try:
+            auth_resp_json = auth_resp.json()
+            self.session.headers.update({'X-SecurityCenter': str(auth_resp_json['response']['token'])})
+        except Exception as e:
+            return self.set_status(phantom.APP_ERROR, "Failed to get/set token", e)
+
+        self.debug_print(self.session.headers)
         return phantom.APP_SUCCESS
 
     def finalize(self):
 
         # Logout
-        ret_val, resp = self._make_rest_call('/token', self, headers=self._headers, method='delete')
+        ret_val, resp = self._make_rest_call('/token', self, method='delete')
         return ret_val
 
-    def _make_rest_call(self, endpoint, result, params={}, headers={}, json={}, method="get", cookies={}):
+    def _make_rest_call(self, endpoint, result, params={}, json={}, method="get"):
 
         url = "{0}/rest{1}".format(self._rest_url, endpoint)
 
-        if self._headers is not None:
-            (headers.update(self._headers))
-
-        request_func = getattr(requests, method)
+        request_func = getattr(self.session, method)
 
         if not request_func:
             return result.set_status(phantom.APP_ERROR, "Invalid method call: {0} for requests module".format(method)), None
 
         try:
-            r = request_func(url, headers=headers, params=params, json=json, cookies=cookies, verify=self._verify)
+            r = request_func(url, params=params, json=json, verify=self._verify)
         except Exception as e:
             return result.set_status(phantom.APP_ERROR, "REST API to server failed", e), None
         try:
             self._cookies = r.cookies
         except Exception as e:
             return result.set_status(phantom.APP_ERROR, "Failed to set cookies", e), None
+
+        try:
+            if hasattr(action_result, 'add_debug_data'):
+                if (response is not None):
+                    action_result.add_debug_data({'r_status_code': response.status_code})
+                    action_result.add_debug_data({'r_text': response.text})
+                    action_result.add_debug_data({'r_headers': response.headers})
+                else:
+                    action_result.add_debug_data({'r_text': 'r is None'})
+        except Exception as e:
+            self.debug_print("No action_result to check for debug attribute: " + str(e))
 
         try:
             resp_json = r.json()
@@ -91,18 +108,10 @@ class SecurityCenterConnector(BaseConnector):
 
         return phantom.APP_SUCCESS, resp_json
 
-    def _get_token(self):
-        self.save_progress("Getting token for session...")
-        ret_val, resp_json = self._make_rest_call('/token', self, json=self._json, method='post')
-        if resp_json:
-            self._headers.update({'X-SecurityCenter': str(resp_json['response']['token'])})
-        return
-
     def _test_connectivity(self):
 
         self.save_progress("Checking connectivity to your SecurityCenter instance...")
-        self._get_token()
-        ret_val, resp_json = self._make_rest_call('/user', self, cookies=self._cookies)
+        ret_val, resp_json = self._make_rest_call('/user', self)
         if phantom.is_fail(ret_val):
             self.append_to_message('Test connectivity failed')
             return self.get_status()
@@ -115,7 +124,6 @@ class SecurityCenterConnector(BaseConnector):
 
         action_result = ActionResult(dict(param))
         self.add_action_result(action_result)
-        self._get_token()
         # target to scan
         host_to_scan = param[TARGET_TO_SCAN]
         scan_policy_id = param[SCAN_POLICY]
@@ -130,7 +138,7 @@ class SecurityCenterConnector(BaseConnector):
                     "reports": [], "type": "policy", "policy": {"id": scan_policy_id}, "zone": {"id": -1},
                     "ipList": str(host_to_scan), "credentials": [], "maxScanTime": "unlimited"}
 
-        ret_val, resp_json = self._make_rest_call('/scan', self, json=scan_data, method='post', cookies=self._cookies)
+        ret_val, resp_json = self._make_rest_call('/scan', self, json=scan_data, method='post')
 
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
@@ -140,9 +148,8 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
-    def _get_ip_vulnerabilities(self, param):
+    def _list_vulnerabilities(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
-        self._get_token()
 
         ip_to_query = param[IP_TO_QUERY]
 
@@ -180,7 +187,7 @@ class SecurityCenterConnector(BaseConnector):
                       "type": "vuln"
                     }
 
-        ret_val, resp_json = self._make_rest_call("/analysis", self, json=query_string, method="post", cookies=self._cookies)
+        ret_val, resp_json = self._make_rest_call("/analysis", self, json=query_string, method="post")
 
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
@@ -205,10 +212,9 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
-    def _list_scan_policies(self, param):
+    def _list_policies(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
-        self._get_token()
-        ret_val, resp_json = self._make_rest_call("/policy", self, cookies=self._cookies)
+        ret_val, resp_json = self._make_rest_call("/policy", self)
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
         action_result.add_data(resp_json["response"])
@@ -225,11 +231,11 @@ class SecurityCenterConnector(BaseConnector):
         self.debug_print("action_id", self.get_action_identifier())
 
         if (action_id == self.ACTION_ID_GET_IP_VULNERABILITIES):
-            ret_val = self._get_ip_vulnerabilities(param)
+            ret_val = self._list_vulnerabilities(param)
         if (action_id == self.ACTION_ID_SCAN_IP):
             ret_val = self._scan_ip(param)
         if (action_id == self.ACTION_ID_LIST_SCAN_POLICIES):
-            ret_val = self._list_scan_policies(param)
+            ret_val = self._list_policies(param)
         elif (action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY):
             ret_val = self._test_connectivity()
 
