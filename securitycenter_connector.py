@@ -21,6 +21,7 @@ from phantom.action_result import ActionResult
 import requests
 import datetime
 import json
+import BeautifulSoup
 from securitycenter_consts import *
 
 
@@ -35,23 +36,21 @@ class SecurityCenterConnector(BaseConnector):
 
         # Call the BaseConnectors init first
         super(SecurityCenterConnector, self).__init__()
-
         self._verify = None
-        self._cookies = None
 
     def initialize(self):
 
         config = self.get_config()
         self._verify = config.get("verify_server_cert")
-        self._rest_url = config.get("sc_instance")
+        self._rest_url = config.get("base_url")
 
         self.session = requests.Session()
-        auth_data = {"username": config.get("sc_username"), "password": config.get("sc_password")}
+        auth_data = {"username": config.get("username"), "password": config.get("password")}
         self.session.headers = {'Content-type': 'application/json', 'accept': 'application/json'}
 
         self.save_progress("Getting token for session...")
-        auth_resp = self.session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
         try:
+            auth_resp = self.session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
             auth_resp_json = auth_resp.json()
             self.session.headers.update({'X-SecurityCenter': str(auth_resp_json['response']['token'])})
         except Exception as e:
@@ -66,47 +65,91 @@ class SecurityCenterConnector(BaseConnector):
         ret_val, resp = self._make_rest_call('/token', self, method='delete')
         return ret_val
 
+    def _process_html_response(self, response, action_result):
+
+        # An html response, is bound to be an error
+        status_code = response.status_code
+
+        try:
+            soup = BeautifulSoup(response.text, "html.parser")
+            error_text = soup.text
+            split_lines = error_text.split('\n')
+            split_lines = [x.strip() for x in split_lines if x.strip()]
+            error_text = '\n'.join(split_lines)
+        except:
+            error_text = "Cannot parse error details"
+
+        message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code,
+                                                                      error_text)
+
+        message = message.replace('{', '{{').replace('}', '}}')
+
+        return action_result.set_status(phantom.APP_ERROR, message), None
+
+    def _process_json_response(self, r, action_result):
+
+        # Try a json parse
+        try:
+            resp_json = r.json()
+        except Exception as e:
+            return action_result.set_status(phantom.APP_ERROR, "Unable to parse response as JSON", e), None
+
+        if (200 <= r.status_code < 205):
+            return phantom.APP_SUCCESS, resp_json
+
+        action_result.add_data(resp_json)
+        message = r.text.replace('{', '{{').replace('}', '}}')
+        return action_result.set_status(phantom.APP_ERROR,
+                                               "Error from server, Status Code: {0} data returned: {1}".format(
+                                                   r.status_code, message)), resp_json
+
+    def _process_response(self, r, action_result):
+
+        # store the r_text in debug data, it will get dumped in the logs if an error occurs
+        if hasattr(action_result, 'add_debug_data'):
+            if (r is not None):
+                action_result.add_debug_data({'r_text': r.text})
+                action_result.add_debug_data({'r_headers': r.headers})
+                action_result.add_debug_data({'r_status_code': r.status_code})
+            else:
+                action_result.add_debug_data({'r_text': 'r is None'})
+
+        # There are just too many differences in the response to handle all of them in the same function
+        if ('json' in r.headers.get('Content-Type', '')):
+            return self._process_json_response(r, action_result)
+
+        if ('html' in r.headers.get('Content-Type', '')):
+            return self._process_html_response(r, action_result)
+
+        # it's not an html or json, handle if it is a successful empty response
+        # if (200 <= r.status_code < 205) and (not r.text):
+        #   return self._process_empty_reponse(r, action_result)
+
+        # everything else is actually an error at this point
+        message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
+            r.status_code, r.text.replace('{', '{{').replace('}', '}}'))
+
+        return action_result.set_status(phantom.APP_ERROR, message), None
+
     def _make_rest_call(self, endpoint, result, params={}, json={}, method="get"):
 
         url = "{0}/rest{1}".format(self._rest_url, endpoint)
 
-        request_func = getattr(self.session, method)
-
-        if not request_func:
-            return result.set_status(phantom.APP_ERROR, "Invalid method call: {0} for requests module".format(method)), None
+        try:
+            request_func = getattr(self.session, method)
+        except AttributeError:
+            # Set the action_result status to error, the handler function will most probably return as is
+            return result.set_status(phantom.APP_ERROR, "Unsupported method: {0}".format(method)), None
+        except Exception as e:
+            # Set the action_result status to error, the handler function will most probably return as is
+            return result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(str(e))), None
 
         try:
             r = request_func(url, params=params, json=json, verify=self._verify)
         except Exception as e:
-            return result.set_status(phantom.APP_ERROR, "REST API to server failed", e), None
-        try:
-            self._cookies = r.cookies
-        except Exception as e:
-            return result.set_status(phantom.APP_ERROR, "Failed to set cookies", e), None
+            return result.set_status(phantom.APP_ERROR, "REST API to server failed: ", e), None
 
-        try:
-            if hasattr(action_result, 'add_debug_data'):
-                if (response is not None):
-                    action_result.add_debug_data({'r_status_code': response.status_code})
-                    action_result.add_debug_data({'r_text': response.text})
-                    action_result.add_debug_data({'r_headers': response.headers})
-                else:
-                    action_result.add_debug_data({'r_text': 'r is None'})
-        except Exception as e:
-            self.debug_print("No action_result to check for debug attribute: " + str(e))
-
-        try:
-            resp_json = r.json()
-        except Exception as e:
-            self.debug_print(r)
-            return (result.set_status(phantom.APP_ERROR, "Error converting response to json"), None)
-
-        # ret_val, resp = self._parse_response(result, r)
-        # Any http or parsing error is handled by the _parse_response function
-        # if phantom.is_fail(ret_val):
-        #    return result.get_status(), resp.content
-
-        return phantom.APP_SUCCESS, resp_json
+        return self._process_response(r, result)
 
     def _test_connectivity(self):
 
@@ -116,7 +159,7 @@ class SecurityCenterConnector(BaseConnector):
             self.append_to_message('Test connectivity failed')
             return self.get_status()
         else:
-            self.debug_print(self._headers["X-SecurityCenter"])
+            self.debug_print(self.session.headers["X-SecurityCenter"])
             self.debug_print("In test connectivity, just before returning")
             return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to SecurityCenter was successful.")
 
@@ -151,8 +194,25 @@ class SecurityCenterConnector(BaseConnector):
     def _list_vulnerabilities(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        ip_to_query = param[IP_TO_QUERY]
-
+        list_vuln_host = param[LIST_VULN_HOST]
+        if phantom.is_ip(list_vuln_host) is True:
+            filters = [{
+                            "id": "ip",
+                            "filterName": "ip",
+                            "operator": "=",
+                            "type": "vuln",
+                            "isPredefined": True,
+                            "value": str(list_vuln_host)
+                          }]
+        else:
+            filters = [{
+                            "id": "dns",
+                            "filterName": "dnsName",
+                            "operator": "=",
+                            "type": "vuln",
+                            "isPredefined": True,
+                            "value": str(list_vuln_host)
+                          }]
         query_string = {
                       "query": {
                         "name": "",
@@ -167,16 +227,7 @@ class SecurityCenterConnector(BaseConnector):
                         "sourceType": "cumulative",
                         "startOffset": 0,
                         "endOffset": 50,
-                        "filters": [
-                          {
-                            "id": "ip",
-                            "filterName": "ip",
-                            "operator": "=",
-                            "type": "vuln",
-                            "isPredefined": True,
-                            "value": str(ip_to_query)
-                          }
-                        ],
+                        "filters": filters,
                         "sortColumn": "severity",
                         "sortDirection": "desc",
                         "vulnTool": "sumid"

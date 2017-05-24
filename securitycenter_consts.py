@@ -14,6 +14,6 @@
 
 TARGET_TO_SCAN = "target_to_scan"
 SCAN_POLICY = "scan_policy_id"
-IP_TO_QUERY = "ip_to_query"
+LIST_VULN_HOST = "list_vuln_host"
 DATETIME_FORMAT = "TZID=UTC:%Y%m%dT%H%M%S"
 SCAN_DELAY = 3
