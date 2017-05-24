@@ -28,7 +28,7 @@ from securitycenter_consts import *
 class SecurityCenterConnector(BaseConnector):
 
     ACTION_ID_TEST_ASSET_CONNECTIVITY = "test_asset_connectivity"
-    ACTION_ID_SCAN_IP = "scan_ip"
+    ACTION_ID_SCAN_ENDPOINT = "scan_endpoint"
     ACTION_ID_LIST_SCAN_POLICIES = "list_policies"
     ACTION_ID_GET_IP_VULNERABILITIES = "list_vulnerabilities"
 
@@ -163,7 +163,7 @@ class SecurityCenterConnector(BaseConnector):
             self.debug_print("In test connectivity, just before returning")
             return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to SecurityCenter was successful.")
 
-    def _scan_ip(self, param):
+    def _scan_endpoint(self, param):
 
         action_result = ActionResult(dict(param))
         self.add_action_result(action_result)
@@ -283,8 +283,8 @@ class SecurityCenterConnector(BaseConnector):
 
         if (action_id == self.ACTION_ID_GET_IP_VULNERABILITIES):
             ret_val = self._list_vulnerabilities(param)
-        if (action_id == self.ACTION_ID_SCAN_IP):
-            ret_val = self._scan_ip(param)
+        if (action_id == self.ACTION_ID_SCAN_ENDPOINT):
+            ret_val = self._scan_endpoint(param)
         if (action_id == self.ACTION_ID_LIST_SCAN_POLICIES):
             ret_val = self._list_policies(param)
         elif (action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY):

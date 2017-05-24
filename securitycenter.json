@@ -52,14 +52,14 @@
         "versions":"EQ(*)"
       },
       {
-      "action": "scan ip",
-      "description": "Runs a scan against a specified host.",
+      "action": "scan endpoint",
+      "description": "Runs a scan against a specified IP or host.",
       "type": "investigate",
-      "identifier": "scan_ip",
+      "identifier": "scan_endpoint",
       "read_only": true,
       "parameters": {
         "target_to_scan": {
-          "description": "IP(s) to scan - multiple targets separated by commas, no spaces",
+          "description": "IP(s) / hostname(s) to scan - multiple targets separated by commas, no spaces. No mixing types.",
           "data_type": "string",
           "contains": [ "ip", "host name" ],
           "primary": true,
@@ -74,7 +74,7 @@
       },
       "render": {
         "width": 12,
-        "title": "Scan IP Info",
+        "title": "Scan Endpoint Info",
         "type": "table",
         "height": 5
       },
