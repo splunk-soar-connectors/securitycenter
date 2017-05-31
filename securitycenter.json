@@ -58,7 +58,7 @@
       "identifier": "scan_endpoint",
       "read_only": true,
       "parameters": {
-        "target_to_scan": {
+        "ip_hostname": {
           "description": "IP(s) / hostname(s) to scan - multiple targets separated by commas, no spaces. No mixing types.",
           "data_type": "string",
           "contains": [ "ip", "host name" ],
@@ -150,7 +150,7 @@
       "identifier": "list_vulnerabilities",
       "read_only": true,
       "parameters": {
-        "list_vuln_host": {
+        "ip_hostname": {
         "description": "IP / host name of host to query",
         "data_type": "string",
         "contains": [

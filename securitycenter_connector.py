@@ -41,22 +41,22 @@ class SecurityCenterConnector(BaseConnector):
     def initialize(self):
 
         config = self.get_config()
-        self._verify = config.get("verify_server_cert")
-        self._rest_url = config.get("base_url")
+        self._verify = config["verify_server_cert"]
+        self._rest_url = config["base_url"]
 
-        self.session = requests.Session()
-        auth_data = {"username": config.get("username"), "password": config.get("password")}
-        self.session.headers = {'Content-type': 'application/json', 'accept': 'application/json'}
+        self._session = requests.Session()
+        auth_data = {"username": config["username"], "password": config["password"]}
+        self._session.headers = {'Content-type': 'application/json', 'accept': 'application/json'}
 
         self.save_progress("Getting token for session...")
         try:
-            auth_resp = self.session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
+            auth_resp = self._session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
             auth_resp_json = auth_resp.json()
-            self.session.headers.update({'X-SecurityCenter': str(auth_resp_json['response']['token'])})
+            self._session.headers.update({'X-SecurityCenter': str(auth_resp_json['response']['token'])})
         except Exception as e:
             return self.set_status(phantom.APP_ERROR, "Failed to get/set token", e)
 
-        self.debug_print(self.session.headers)
+        self.debug_print(self._session.headers)
         return phantom.APP_SUCCESS
 
     def finalize(self):
@@ -136,7 +136,7 @@ class SecurityCenterConnector(BaseConnector):
         url = "{0}/rest{1}".format(self._rest_url, endpoint)
 
         try:
-            request_func = getattr(self.session, method)
+            request_func = getattr(self._session, method)
         except AttributeError:
             # Set the action_result status to error, the handler function will most probably return as is
             return result.set_status(phantom.APP_ERROR, "Unsupported method: {0}".format(method)), None
@@ -159,7 +159,7 @@ class SecurityCenterConnector(BaseConnector):
             self.append_to_message('Test connectivity failed')
             return self.get_status()
         else:
-            self.debug_print(self.session.headers["X-SecurityCenter"])
+            self.debug_print(self._session.headers["X-SecurityCenter"])
             self.debug_print("In test connectivity, just before returning")
             return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to SecurityCenter was successful.")
 
@@ -168,7 +168,7 @@ class SecurityCenterConnector(BaseConnector):
         action_result = ActionResult(dict(param))
         self.add_action_result(action_result)
         # target to scan
-        host_to_scan = param[TARGET_TO_SCAN]
+        ip_hostname = param[IP_HOSTNAME]
         scan_policy_id = param[SCAN_POLICY]
 
         # Calculate scan start time with a defined delay
@@ -179,7 +179,7 @@ class SecurityCenterConnector(BaseConnector):
                                                                       "repeatRule": "FREQ=NOW;INTERVAL=1",
                                                                       "type": "now"},
                     "reports": [], "type": "policy", "policy": {"id": scan_policy_id}, "zone": {"id": -1},
-                    "ipList": str(host_to_scan), "credentials": [], "maxScanTime": "unlimited"}
+                    "ipList": str(ip_hostname), "credentials": [], "maxScanTime": "unlimited"}
 
         ret_val, resp_json = self._make_rest_call('/scan', self, json=scan_data, method='post')
 
@@ -194,7 +194,7 @@ class SecurityCenterConnector(BaseConnector):
     def _list_vulnerabilities(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        list_vuln_host = param[LIST_VULN_HOST]
+        list_vuln_host = param[IP_HOSTNAME]
         if phantom.is_ip(list_vuln_host) is True:
             filters = [{
                             "id": "ip",
