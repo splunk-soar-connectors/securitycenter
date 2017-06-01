@@ -80,6 +80,14 @@
       },
       "output": [
         {
+          "data_path": "action_result.parameter.scan_policy_id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.parameter.ip_hostname",
+          "data_type": "string"
+        },
+        {
             "data_path": "action_result.status",
             "data_type": "string"
         },
@@ -167,6 +175,10 @@
         "height": 5
       },
       "output": [
+        {
+          "data_path": "action_result.parameter.ip_hostname",
+          "data_type": "string"
+        },
         {
             "data_path": "action_result.status",
             "data_type": "string"
