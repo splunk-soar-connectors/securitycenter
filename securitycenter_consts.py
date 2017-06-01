@@ -12,8 +12,7 @@
 #
 # --
 
-TARGET_TO_SCAN = "target_to_scan"
+IP_HOSTNAME = "ip_hostname"
 SCAN_POLICY = "scan_policy_id"
-IP_TO_QUERY = "ip_to_query"
 DATETIME_FORMAT = "TZID=UTC:%Y%m%dT%H%M%S"
 SCAN_DELAY = 3

@@ -21,103 +21,154 @@ from phantom.action_result import ActionResult
 import requests
 import datetime
 import json
+import BeautifulSoup
 from securitycenter_consts import *
 
 
 class SecurityCenterConnector(BaseConnector):
 
     ACTION_ID_TEST_ASSET_CONNECTIVITY = "test_asset_connectivity"
-    ACTION_ID_SCAN_IP = "scan_ip"
-    ACTION_ID_LIST_SCAN_POLICIES = "list_scan_policies"
-    ACTION_ID_GET_IP_VULNERABILITIES = "get_ip_vulnerabilities"
+    ACTION_ID_SCAN_ENDPOINT = "scan_endpoint"
+    ACTION_ID_LIST_SCAN_POLICIES = "list_policies"
+    ACTION_ID_GET_IP_VULNERABILITIES = "list_vulnerabilities"
 
     def __init__(self):
 
         # Call the BaseConnectors init first
         super(SecurityCenterConnector, self).__init__()
-
-        self._headers = {'Content-type': 'application/json'}
         self._verify = None
-        self._json = dict()
-        self._cookies = None
 
     def initialize(self):
 
         config = self.get_config()
-        self._verify = config.get("verify_server_cert")
-        self._rest_url = config.get("sc_instance")
-        self._json['username'] = config.get("sc_username")
-        self._json['password'] = config.get('sc_password')
+        self._verify = config["verify_server_cert"]
+        self._rest_url = config["base_url"]
 
+        self._session = requests.Session()
+        auth_data = {"username": config["username"], "password": config["password"]}
+        self._session.headers = {'Content-type': 'application/json', 'accept': 'application/json'}
+
+        self.save_progress("Getting token for session...")
+        try:
+            auth_resp = self._session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
+            auth_resp_json = auth_resp.json()
+            self._session.headers.update({'X-SecurityCenter': str(auth_resp_json['response']['token'])})
+        except Exception as e:
+            return self.set_status(phantom.APP_ERROR, "Failed to get/set token", e)
+
+        self.debug_print(self._session.headers)
         return phantom.APP_SUCCESS
 
     def finalize(self):
 
         # Logout
-        ret_val, resp = self._make_rest_call('/token', self, headers=self._headers, method='delete')
+        ret_val, resp = self._make_rest_call('/token', self, method='delete')
         return ret_val
 
-    def _make_rest_call(self, endpoint, result, params={}, headers={}, json={}, method="get", cookies={}):
+    def _process_html_response(self, response, action_result):
 
-        url = "{0}/rest{1}".format(self._rest_url, endpoint)
-
-        if self._headers is not None:
-            (headers.update(self._headers))
-
-        request_func = getattr(requests, method)
-
-        if not request_func:
-            return result.set_status(phantom.APP_ERROR, "Invalid method call: {0} for requests module".format(method)), None
+        # An html response, is bound to be an error
+        status_code = response.status_code
 
         try:
-            r = request_func(url, headers=headers, params=params, json=json, cookies=cookies, verify=self._verify)
-        except Exception as e:
-            return result.set_status(phantom.APP_ERROR, "REST API to server failed", e), None
-        try:
-            self._cookies = r.cookies
-        except Exception as e:
-            return result.set_status(phantom.APP_ERROR, "Failed to set cookies", e), None
+            soup = BeautifulSoup(response.text, "html.parser")
+            error_text = soup.text
+            split_lines = error_text.split('\n')
+            split_lines = [x.strip() for x in split_lines if x.strip()]
+            error_text = '\n'.join(split_lines)
+        except:
+            error_text = "Cannot parse error details"
 
+        message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code,
+                                                                      error_text)
+
+        message = message.replace('{', '{{').replace('}', '}}')
+
+        return action_result.set_status(phantom.APP_ERROR, message), None
+
+    def _process_json_response(self, r, action_result):
+
+        # Try a json parse
         try:
             resp_json = r.json()
         except Exception as e:
-            self.debug_print(r)
-            return (result.set_status(phantom.APP_ERROR, "Error converting response to json"), None)
+            return action_result.set_status(phantom.APP_ERROR, "Unable to parse response as JSON", e), None
 
-        # ret_val, resp = self._parse_response(result, r)
-        # Any http or parsing error is handled by the _parse_response function
-        # if phantom.is_fail(ret_val):
-        #    return result.get_status(), resp.content
+        if (200 <= r.status_code < 205):
+            return phantom.APP_SUCCESS, resp_json
 
-        return phantom.APP_SUCCESS, resp_json
+        action_result.add_data(resp_json)
+        message = r.text.replace('{', '{{').replace('}', '}}')
+        return action_result.set_status(phantom.APP_ERROR,
+                                               "Error from server, Status Code: {0} data returned: {1}".format(
+                                                   r.status_code, message)), resp_json
 
-    def _get_token(self):
-        self.save_progress("Getting token for session...")
-        ret_val, resp_json = self._make_rest_call('/token', self, json=self._json, method='post')
-        if resp_json:
-            self._headers.update({'X-SecurityCenter': str(resp_json['response']['token'])})
-        return
+    def _process_response(self, r, action_result):
+
+        # store the r_text in debug data, it will get dumped in the logs if an error occurs
+        if hasattr(action_result, 'add_debug_data'):
+            if (r is not None):
+                action_result.add_debug_data({'r_text': r.text})
+                action_result.add_debug_data({'r_headers': r.headers})
+                action_result.add_debug_data({'r_status_code': r.status_code})
+            else:
+                action_result.add_debug_data({'r_text': 'r is None'})
+
+        # There are just too many differences in the response to handle all of them in the same function
+        if ('json' in r.headers.get('Content-Type', '')):
+            return self._process_json_response(r, action_result)
+
+        if ('html' in r.headers.get('Content-Type', '')):
+            return self._process_html_response(r, action_result)
+
+        # it's not an html or json, handle if it is a successful empty response
+        # if (200 <= r.status_code < 205) and (not r.text):
+        #   return self._process_empty_reponse(r, action_result)
+
+        # everything else is actually an error at this point
+        message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
+            r.status_code, r.text.replace('{', '{{').replace('}', '}}'))
+
+        return action_result.set_status(phantom.APP_ERROR, message), None
+
+    def _make_rest_call(self, endpoint, result, params={}, json={}, method="get"):
+
+        url = "{0}/rest{1}".format(self._rest_url, endpoint)
+
+        try:
+            request_func = getattr(self._session, method)
+        except AttributeError:
+            # Set the action_result status to error, the handler function will most probably return as is
+            return result.set_status(phantom.APP_ERROR, "Unsupported method: {0}".format(method)), None
+        except Exception as e:
+            # Set the action_result status to error, the handler function will most probably return as is
+            return result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(str(e))), None
+
+        try:
+            r = request_func(url, params=params, json=json, verify=self._verify)
+        except Exception as e:
+            return result.set_status(phantom.APP_ERROR, "REST API to server failed: ", e), None
+
+        return self._process_response(r, result)
 
     def _test_connectivity(self):
 
         self.save_progress("Checking connectivity to your SecurityCenter instance...")
-        self._get_token()
-        ret_val, resp_json = self._make_rest_call('/user', self, cookies=self._cookies)
+        ret_val, resp_json = self._make_rest_call('/user', self)
         if phantom.is_fail(ret_val):
             self.append_to_message('Test connectivity failed')
             return self.get_status()
         else:
-            self.debug_print(self._headers["X-SecurityCenter"])
+            self.debug_print(self._session.headers["X-SecurityCenter"])
             self.debug_print("In test connectivity, just before returning")
             return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to SecurityCenter was successful.")
 
-    def _scan_ip(self, param):
+    def _scan_endpoint(self, param):
 
         action_result = ActionResult(dict(param))
         self.add_action_result(action_result)
-        self._get_token()
         # target to scan
-        host_to_scan = param[TARGET_TO_SCAN]
+        ip_hostname = param[IP_HOSTNAME]
         scan_policy_id = param[SCAN_POLICY]
 
         # Calculate scan start time with a defined delay
@@ -128,9 +179,9 @@ class SecurityCenterConnector(BaseConnector):
                                                                       "repeatRule": "FREQ=NOW;INTERVAL=1",
                                                                       "type": "now"},
                     "reports": [], "type": "policy", "policy": {"id": scan_policy_id}, "zone": {"id": -1},
-                    "ipList": str(host_to_scan), "credentials": [], "maxScanTime": "unlimited"}
+                    "ipList": str(ip_hostname), "credentials": [], "maxScanTime": "unlimited"}
 
-        ret_val, resp_json = self._make_rest_call('/scan', self, json=scan_data, method='post', cookies=self._cookies)
+        ret_val, resp_json = self._make_rest_call('/scan', self, json=scan_data, method='post')
 
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
@@ -140,12 +191,28 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
-    def _get_ip_vulnerabilities(self, param):
+    def _list_vulnerabilities(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
-        self._get_token()
 
-        ip_to_query = param[IP_TO_QUERY]
-
+        list_vuln_host = param[IP_HOSTNAME]
+        if phantom.is_ip(list_vuln_host) is True:
+            filters = [{
+                            "id": "ip",
+                            "filterName": "ip",
+                            "operator": "=",
+                            "type": "vuln",
+                            "isPredefined": True,
+                            "value": str(list_vuln_host)
+                          }]
+        else:
+            filters = [{
+                            "id": "dns",
+                            "filterName": "dnsName",
+                            "operator": "=",
+                            "type": "vuln",
+                            "isPredefined": True,
+                            "value": str(list_vuln_host)
+                          }]
         query_string = {
                       "query": {
                         "name": "",
@@ -160,16 +227,7 @@ class SecurityCenterConnector(BaseConnector):
                         "sourceType": "cumulative",
                         "startOffset": 0,
                         "endOffset": 50,
-                        "filters": [
-                          {
-                            "id": "ip",
-                            "filterName": "ip",
-                            "operator": "=",
-                            "type": "vuln",
-                            "isPredefined": True,
-                            "value": str(ip_to_query)
-                          }
-                        ],
+                        "filters": filters,
                         "sortColumn": "severity",
                         "sortDirection": "desc",
                         "vulnTool": "sumid"
@@ -180,7 +238,7 @@ class SecurityCenterConnector(BaseConnector):
                       "type": "vuln"
                     }
 
-        ret_val, resp_json = self._make_rest_call("/analysis", self, json=query_string, method="post", cookies=self._cookies)
+        ret_val, resp_json = self._make_rest_call("/analysis", self, json=query_string, method="post")
 
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
@@ -205,10 +263,9 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
-    def _list_scan_policies(self, param):
+    def _list_policies(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
-        self._get_token()
-        ret_val, resp_json = self._make_rest_call("/policy", self, cookies=self._cookies)
+        ret_val, resp_json = self._make_rest_call("/policy", self)
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
         action_result.add_data(resp_json["response"])
@@ -225,11 +282,11 @@ class SecurityCenterConnector(BaseConnector):
         self.debug_print("action_id", self.get_action_identifier())
 
         if (action_id == self.ACTION_ID_GET_IP_VULNERABILITIES):
-            ret_val = self._get_ip_vulnerabilities(param)
-        if (action_id == self.ACTION_ID_SCAN_IP):
-            ret_val = self._scan_ip(param)
+            ret_val = self._list_vulnerabilities(param)
+        if (action_id == self.ACTION_ID_SCAN_ENDPOINT):
+            ret_val = self._scan_endpoint(param)
         if (action_id == self.ACTION_ID_LIST_SCAN_POLICIES):
-            ret_val = self._list_scan_policies(param)
+            ret_val = self._list_policies(param)
         elif (action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY):
             ret_val = self._test_connectivity()
 

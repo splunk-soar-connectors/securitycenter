@@ -7,16 +7,16 @@
     "type": "vulnerability scanner",
     "license": "Copyright (c) Phantom Cyber Corporation 2016",
     "main_module" : "securitycenter_connector.pyc",
-    "app_version": "1.4",
-    "utctime_updated": "2017-05-23T16:12:07.000000Z",
+    "app_version": "1.3.0",
+    "utctime_updated": "2016-05-27T00:32:59.000000Z",
     "product_vendor": "Tenable",
     "product_name": "securitycenter",
     "product_version_regex": ".*",
     "min_phantom_version": "1.0.240",
     "logo": "securitycenter.png",
     "configuration": {
-          "sc_instance": {
-            "description": "URL for your SecurityCenter instance",
+          "base_url": {
+            "description": "SecurityCenter instance URL (https://sc_instance.company.com)",
             "data_type": "string",
             "required": true,
             "order": 0
@@ -28,12 +28,12 @@
             "order": 1,
             "default": false
           },
-          "sc_username": {
+          "username": {
             "description": "Username",
             "data_type": "string",
             "required": true
           },
-	      "sc_password": {
+	      "password": {
             "description": "Password",
             "data_type": "password",
             "required": true
@@ -52,16 +52,16 @@
         "versions":"EQ(*)"
       },
       {
-      "action": "scan ip",
-      "description": "Runs a scan against a specified host.",
+      "action": "scan endpoint",
+      "description": "Runs a scan against a specified IP or host.",
       "type": "investigate",
-      "identifier": "scan_ip",
+      "identifier": "scan_endpoint",
       "read_only": true,
       "parameters": {
-        "target_to_scan": {
-          "description": "IP(s) to scan - multiple targets separated by commas, no spaces",
+        "ip_hostname": {
+          "description": "IP(s) / hostname(s) to scan - multiple targets separated by commas, no spaces. No mixing types.",
           "data_type": "string",
-          "contains": [ "ip" ],
+          "contains": [ "ip", "host name" ],
           "primary": true,
           "required": true
           },
@@ -74,7 +74,7 @@
       },
       "render": {
         "width": 12,
-        "title": "Scan IP Info",
+        "title": "Scan Endpoint Info",
         "type": "table",
         "height": 5
       },
@@ -108,7 +108,7 @@
         {
           "data_path": "action_result.data.*.ipList",
           "data_type": "string",
-          "contains": [ "ip","hostname"],
+          "contains": [ "ip","host name"],
           "column_name": "Scan Target(s)",
           "column_order": 1
         },
@@ -144,17 +144,17 @@
       "versions": "EQ(*)"
       },
       {
-      "action": "get ip vulnerabilities",
-      "description": "Query SecurityCenter for a list of Vulnerabilities associated with an IP",
+      "action": "list vulnerabilities",
+      "description": "Query SecurityCenter for a list of Vulnerabilities associated with an IP or host name",
       "type": "investigate",
-      "identifier": "get_ip_vulnerabilities",
+      "identifier": "list_vulnerabilities",
       "read_only": true,
       "parameters": {
-        "ip_to_query": {
-        "description": "IP of host to query",
+        "ip_hostname": {
+        "description": "IP / host name of host to query",
         "data_type": "string",
         "contains": [
-          "ip"
+          "ip", "host name"
         ],
         "primary": true,
         "required": true
@@ -162,7 +162,7 @@
       },
       "render": {
         "width": 18,
-        "title": "IP Vulnerability Information",
+        "title": "IP/Host Vulnerability Information",
         "type": "table",
         "height": 5
       },
@@ -231,10 +231,10 @@
       "versions": "EQ(*)"
       },
       {
-      "action": "list scan policies",
+      "action": "list policies",
       "description": "Lists the scan policies available in Tenable SecurityCenter",
       "type": "generic",
-      "identifier": "list_scan_policies",
+      "identifier": "list_policies",
       "read_only": true,
       "parameters": {},
       "render": {
