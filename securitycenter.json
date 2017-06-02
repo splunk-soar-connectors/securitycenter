@@ -1,57 +1,59 @@
 {
-    "appid"       : "421c4b26-2254-41f0-8544-5619af2afa42",
-    "name"      : "SecurityCenter",
-    "description" : "Take action with Tenable's SecurityCenter",
-    "publisher": "Phantom",
-    "package_name": "phantom_securitycenter",
-    "type": "vulnerability scanner",
-    "license": "Copyright (c) Phantom Cyber Corporation 2016",
-    "main_module" : "securitycenter_connector.pyc",
-    "app_version": "1.3.2",
-    "utctime_updated": "2017-06-01T18:52:25.000000Z",
-    "product_vendor": "Tenable",
-    "product_name": "securitycenter",
-    "product_version_regex": ".*",
-    "min_phantom_version": "1.0.240",
-    "logo": "securitycenter.png",
-    "configuration": {
-          "base_url": {
-            "description": "SecurityCenter instance URL (https://sc_instance.company.com)",
-            "data_type": "string",
-            "required": true,
-            "order": 0
-          },
-          "verify_server_cert": {
-            "data_type": "boolean",
-            "description": "Verify server certificate",
-            "required": true,
-            "order": 1,
-            "default": false
-          },
-          "username": {
-            "description": "Username",
-            "data_type": "string",
-            "required": true
-          },
-	      "password": {
-            "description": "Password",
-            "data_type": "password",
-            "required": true
-          }
+  "appid"       : "421c4b26-2254-41f0-8544-5619af2afa42",
+  "name"      : "SecurityCenter",
+  "description" : "Take action with Tenable's SecurityCenter",
+  "publisher": "Phantom",
+  "package_name": "phantom_securitycenter",
+  "type": "vulnerability scanner",
+  "license": "Copyright (c) Phantom Cyber Corporation 2017",
+  "main_module" : "securitycenter_connector.pyc",
+  "app_version": "1.3.2",
+  "utctime_updated": "2017-06-01T18:52:25.000000Z",
+  "product_vendor": "Tenable",
+  "product_name": "SecurityCenter",
+  "product_version_regex": ".*",
+  "min_phantom_version": "1.0.240",
+  "logo": "securitycenter.png",
+  "configuration": {
+    "base_url": {
+      "description": "SecurityCenter instance URL (https://sc_instance.company.com)",
+      "data_type": "string",
+      "required": true,
+      "order": 0
     },
-    "actions": [
-      {
-        "action": "test connectivity",
-        "description": "Validate the asset configuration for connectivity.",
-        "type": "test",
-        "identifier": "test_asset_connectivity",
-        "read_only": true,
-        "parameters": {
-        },
-        "output": [],
-        "versions":"EQ(*)"
+    "verify_server_cert": {
+      "data_type": "boolean",
+      "description": "Verify server certificate",
+      "required": true,
+      "order": 1,
+      "default": false
+    },
+    "username": {
+      "description": "Username",
+      "data_type": "string",
+      "required": true,
+      "order": 2
+    },
+    "password": {
+      "description": "Password",
+      "data_type": "password",
+      "required": true,
+      "order": 3
+    }
+  },
+  "actions": [
+    {
+      "action": "test connectivity",
+      "description": "Validate the asset configuration for connectivity.",
+      "type": "test",
+      "identifier": "test_asset_connectivity",
+      "read_only": true,
+      "parameters": {
       },
-      {
+      "output": [],
+      "versions":"EQ(*)"
+    },
+    {
       "action": "scan endpoint",
       "description": "Runs a scan against a specified IP or host.",
       "type": "investigate",
@@ -59,17 +61,19 @@
       "read_only": true,
       "parameters": {
         "ip_hostname": {
-          "description": "IP(s) / hostname(s) to scan - multiple targets separated by commas, no spaces. No mixing types.",
+          "description": "IP/Hostname to scan (commas separated)",
           "data_type": "string",
           "contains": [ "ip", "host name" ],
           "primary": true,
-          "required": true
-          },
+          "required": true,
+          "allow_list": true
+        },
         "scan_policy_id": {
           "description": "SecurityCenter Scan Policy ID to use",
           "data_type": "numeric",
-          "contains": [ "SecurityCenter Scan Policy ID"],
-          "required": true
+          "contains": [ "securitycenter scan policy id"],
+          "required": true,
+          "primary": true
         }
       },
       "render": {
@@ -81,23 +85,25 @@
       "output": [
         {
           "data_path": "action_result.parameter.scan_policy_id",
-          "data_type": "string"
+          "data_type": "string",
+          "contains": [ "securitycenter scan policy id"]
         },
         {
           "data_path": "action_result.parameter.ip_hostname",
+          "data_type": "string",
+          "contains": [ "ip", "host name" ]
+        },
+        {
+          "data_path": "action_result.status",
           "data_type": "string"
         },
         {
-            "data_path": "action_result.status",
-            "data_type": "string"
+          "data_path": "action_result.message",
+          "data_type": "string"
         },
         {
-            "data_path": "action_result.message",
-            "data_type": "string"
-        },
-        {
-            "data_path": "action_result.summary.name",
-            "data_type": "string"
+          "data_path": "action_result.summary.name",
+          "data_type": "string"
         },
         {
           "data_path": "action_result.data.*.id",
@@ -130,7 +136,7 @@
         {
           "data_path": "action_result.data.*.policy.id",
           "data_type": "string",
-          "contains": [ "SecurityCenter Scan Policy ID"],
+          "contains": [ "securitycenter scan policy id"],
           "column_name": "Scan Policy ID",
           "column_order": 3
         },
@@ -150,8 +156,8 @@
         }
       ],
       "versions": "EQ(*)"
-      },
-      {
+    },
+    {
       "action": "list vulnerabilities",
       "description": "Query SecurityCenter for a list of Vulnerabilities associated with an IP or host name",
       "type": "investigate",
@@ -159,13 +165,11 @@
       "read_only": true,
       "parameters": {
         "ip_hostname": {
-        "description": "IP / host name of host to query",
-        "data_type": "string",
-        "contains": [
-          "ip", "host name"
-        ],
-        "primary": true,
-        "required": true
+          "description": "IP / host name of host to query",
+          "data_type": "string",
+          "contains": [ "ip", "host name" ],
+          "primary": true,
+          "required": true
         }
       },
       "render": {
@@ -177,39 +181,40 @@
       "output": [
         {
           "data_path": "action_result.parameter.ip_hostname",
+          "data_type": "string",
+          "contains": [ "ip", "host name" ]
+        },
+        {
+          "data_path": "action_result.status",
           "data_type": "string"
         },
         {
-            "data_path": "action_result.status",
-            "data_type": "string"
+          "data_path": "action_result.message",
+          "data_type": "string"
         },
         {
-            "data_path": "action_result.message",
-            "data_type": "string"
+          "data_path": "action_result.summary.total_vulnerabilities",
+          "data_type": "string"
         },
         {
-            "data_path": "action_result.summary.total_vulnerabilities",
-            "data_type": "string"
+          "data_path": "action_result.summary.critical_vulns",
+          "data_type": "string"
         },
         {
-            "data_path": "action_result.summary.critical_vulns",
-            "data_type": "string"
+          "data_path": "action_result.summary.high_vulns",
+          "data_type": "string"
         },
         {
-            "data_path": "action_result.summary.high_vulns",
-            "data_type": "string"
+          "data_path": "action_result.summary.medium_vulns",
+          "data_type": "string"
         },
         {
-            "data_path": "action_result.summary.medium_vulns",
-            "data_type": "string"
+          "data_path": "action_result.summary.low_vulns",
+          "data_type": "string"
         },
         {
-            "data_path": "action_result.summary.low_vulns",
-            "data_type": "string"
-        },
-        {
-            "data_path": "action_result.summary.info_vulns",
-            "data_type": "string"
+          "data_path": "action_result.summary.info_vulns",
+          "data_type": "string"
         },
         {
           "data_path": "action_result.data.*.results.*.severity.name",
@@ -239,10 +244,10 @@
           "column_name": "Plugin Family Name",
           "column_order": 3
         }
-        ],
+      ],
       "versions": "EQ(*)"
-      },
-      {
+    },
+    {
       "action": "list policies",
       "description": "Lists the scan policies available in Tenable SecurityCenter",
       "type": "generic",
@@ -257,17 +262,17 @@
       },
       "output": [
         {
-            "data_path": "action_result.status",
-            "data_type": "string"
+          "data_path": "action_result.status",
+          "data_type": "string"
         },
         {
-            "data_path": "action_result.message",
-            "data_type": "string"
+          "data_path": "action_result.message",
+          "data_type": "string"
         },
         {
           "data_path": "action_result.data.*.usable.*.id",
           "data_type": "string",
-          "contains": [ "SecurityCenter Scan Policy ID"],
+          "contains": [ "securitycenter scan policy id"],
           "column_name": "Usable Scan Policy ID",
           "column_order": 0
         },
@@ -280,6 +285,6 @@
         }
       ],
       "versions": "EQ(*)"
-      }
-    ]
+    }
+  ]
 }
