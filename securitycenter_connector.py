@@ -21,7 +21,7 @@ from phantom.action_result import ActionResult
 import requests
 import datetime
 import json
-import BeautifulSoup
+from bs4 import BeautifulSoup
 from securitycenter_consts import *
 
 
@@ -170,6 +170,10 @@ class SecurityCenterConnector(BaseConnector):
         # target to scan
         ip_hostname = param[IP_HOSTNAME]
         scan_policy_id = param[SCAN_POLICY]
+
+        # Clean up ip hostname
+        ip_hostname = [x.strip() for x in ip_hostname.split(',')]
+        ip_hostname = ','.join(ip_hostname)
 
         # Calculate scan start time with a defined delay
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
