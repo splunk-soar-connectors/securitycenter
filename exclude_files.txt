@@ -1,1 +1,6 @@
 *.py
+.git*
+.project
+.pyproject
+.DS_Store
+.gitignore*
