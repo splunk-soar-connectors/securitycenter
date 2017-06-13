@@ -153,6 +153,66 @@
           "contains": [],
           "column_name": "Scan Name",
           "column_order": 5
+        },
+        {
+          "data_path": "action_result.data.*.emailOnLaunch",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.emailOnFinish",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.numDependents",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.classifyMitigatedAge",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.dhcpTracking",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.scanningVirtualHosts",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.canUse",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.modifiedTime",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.maxScanTime",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.rolloverType",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.status",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.canManage",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.description",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.timeoutAction",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.createdTime",
+          "data_type": "string"
         }
       ],
       "versions": "EQ(*)"
@@ -183,6 +243,10 @@
           "data_path": "action_result.parameter.ip_hostname",
           "data_type": "string",
           "contains": [ "ip", "host name" ]
+        },
+        {
+          "data_path": "action_result.parameter.context",
+          "data_type": "string"
         },
         {
           "data_path": "action_result.status",
@@ -243,6 +307,54 @@
           "contains": [],
           "column_name": "Plugin Family Name",
           "column_order": 3
+        },
+        {
+          "data_path": "action_result.data.*.results.*.hostTotal",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.results.*.total",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.results.*.family.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.results.*.family.type",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.results.*.severity.description",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.results.*.severity.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.results.*.severity.name",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.endOffset",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.totalRecords",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.returnedRecords",
+          "data_type": "numeric"
+        },
+        {
+          "data_path": "action_result.data.*.startOffset",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.matchingDataElementCount",
+          "data_type": "string"
         }
       ],
       "versions": "EQ(*)"
@@ -282,6 +394,16 @@
           "contains": [],
           "column_name": "Scan Policy Name",
           "column_order": 1
+        },
+        {
+          "data_path": "action_result.data.*.manageable.*.id",
+          "data_type": "string",
+          "contains": [ "securitycenter scan policy id"]
+        },
+        {
+          "data_path": "action_result.data.*.manageable.*.name",
+          "data_type": "string",
+          "contains": []
         }
       ],
       "versions": "EQ(*)"
