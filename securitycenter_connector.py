@@ -16,6 +16,7 @@
 import phantom.app as phantom
 from phantom.base_connector import BaseConnector
 from phantom.action_result import ActionResult
+import phantom.utils as ph_utils
 
 # Imports local to this App
 import requests
@@ -131,7 +132,7 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_ERROR, message), None
 
-    def _make_rest_call(self, endpoint, result, params={}, json={}, method="get"):
+    def _make_rest_call(self, endpoint, action_result, params={}, json={}, method="get"):
 
         url = "{0}/rest{1}".format(self._rest_url, endpoint)
 
@@ -139,17 +140,17 @@ class SecurityCenterConnector(BaseConnector):
             request_func = getattr(self._session, method)
         except AttributeError:
             # Set the action_result status to error, the handler function will most probably return as is
-            return result.set_status(phantom.APP_ERROR, "Unsupported method: {0}".format(method)), None
+            return action_result.set_status(phantom.APP_ERROR, "Unsupported method: {0}".format(method)), None
         except Exception as e:
             # Set the action_result status to error, the handler function will most probably return as is
-            return result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(str(e))), None
+            return action_result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(str(e))), None
 
         try:
             r = request_func(url, params=params, json=json, verify=self._verify)
         except Exception as e:
-            return result.set_status(phantom.APP_ERROR, "REST API to server failed: ", e), None
+            return action_result.set_status(phantom.APP_ERROR, "REST API to server failed: ", e), None
 
-        return self._process_response(r, result)
+        return self._process_response(r, action_result)
 
     def _test_connectivity(self):
 
@@ -169,23 +170,30 @@ class SecurityCenterConnector(BaseConnector):
         self.add_action_result(action_result)
         # target to scan
         ip_hostname = param[IP_HOSTNAME]
-        scan_policy_id = param[SCAN_POLICY]
 
         # Clean up ip hostname
         ip_hostname = [x.strip() for x in ip_hostname.split(',')]
         ip_hostname = ','.join(ip_hostname)
+        ip_hostname = ip_hostname.replace("https://", "")
+        ip_hostname = ip_hostname.replace("http://", "")
+        if (not ph_utils.is_hostname(ip_hostname)):
+            if (not ph_utils.is_ip(ip_hostname)):
+                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
+
+        scan_policy_id = param[SCAN_POLICY]
+        if len(str(scan_policy_id)) > 10:
+            return action_result.set_status(phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs.")
 
         # Calculate scan start time with a defined delay
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
         scan_start = scan_start.strftime(DATETIME_FORMAT)
         # can probably remove some of these options
-        scan_data = {"name": "Scan Launched from Phantom", "repository": {"id": 1}, "schedule": {"start": scan_start,
-                                                                      "repeatRule": "FREQ=NOW;INTERVAL=1",
-                                                                      "type": "now"},
+        scan_data = {"name": "Scan Launched from Phantom", "repository": {"id": 1},
+                    "schedule": {"start": scan_start, "repeatRule": "FREQ=NOW;INTERVAL=1", "type": "now"},
                     "reports": [], "type": "policy", "policy": {"id": scan_policy_id}, "zone": {"id": -1},
                     "ipList": str(ip_hostname), "credentials": [], "maxScanTime": "unlimited"}
 
-        ret_val, resp_json = self._make_rest_call('/scan', self, json=scan_data, method='post')
+        ret_val, resp_json = self._make_rest_call('/scan', action_result, json=scan_data, method='post')
 
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
@@ -199,6 +207,10 @@ class SecurityCenterConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         list_vuln_host = param[IP_HOSTNAME]
+        if (not ph_utils.is_ip(list_vuln_host.strip())):
+            if len(list_vuln_host) > 255:
+                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities.")
+
         if phantom.is_ip(list_vuln_host) is True:
             filters = [{
                             "id": "ip",
@@ -242,7 +254,7 @@ class SecurityCenterConnector(BaseConnector):
                       "type": "vuln"
                     }
 
-        ret_val, resp_json = self._make_rest_call("/analysis", self, json=query_string, method="post")
+        ret_val, resp_json = self._make_rest_call("/analysis", action_result, json=query_string, method="post")
 
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
@@ -269,7 +281,7 @@ class SecurityCenterConnector(BaseConnector):
 
     def _list_policies(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
-        ret_val, resp_json = self._make_rest_call("/policy", self)
+        ret_val, resp_json = self._make_rest_call("/policy", action_result)
         if (phantom.is_fail(ret_val)):
             return action_result.get_status()
         action_result.add_data(resp_json["response"])

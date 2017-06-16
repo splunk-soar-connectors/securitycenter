@@ -85,7 +85,7 @@
       "output": [
         {
           "data_path": "action_result.parameter.scan_policy_id",
-          "data_type": "string",
+          "data_type": "numeric",
           "contains": [ "securitycenter scan policy id"]
         },
         {
@@ -135,7 +135,7 @@
         },
         {
           "data_path": "action_result.data.*.policy.id",
-          "data_type": "string",
+          "data_type": "numeric",
           "contains": [ "securitycenter scan policy id"],
           "column_name": "Scan Policy ID",
           "column_order": 3
@@ -383,7 +383,7 @@
         },
         {
           "data_path": "action_result.data.*.usable.*.id",
-          "data_type": "string",
+          "data_type": "numeric",
           "contains": [ "securitycenter scan policy id"],
           "column_name": "Usable Scan Policy ID",
           "column_order": 0
@@ -397,7 +397,7 @@
         },
         {
           "data_path": "action_result.data.*.manageable.*.id",
-          "data_type": "string",
+          "data_type": "numeric",
           "contains": [ "securitycenter scan policy id"]
         },
         {
