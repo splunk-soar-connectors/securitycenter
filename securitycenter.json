@@ -213,6 +213,186 @@
         {
           "data_path": "action_result.data.*.createdTime",
           "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.error_code",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.error_msgaction_result.data.*.warnings",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.timestamp",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.zone",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.zone.description",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.zone.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.zone.name",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.response",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.creator",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.creator.username",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.creator.lastname",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.creator.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.creator.firstname",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.owner",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.owner.username",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.owner.lastname",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.owner.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.repository",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.repository.description",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.repository.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.repository.name",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.repeatRule",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.dependent",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.dependent.description",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.dependent.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.dependent.name",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.nextRun",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.start",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.type",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.schedule.objectType",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.ownerGroup",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.ownerGroup.description",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.ownerGroup.id",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.ownerGroup.name",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.policyPrefs",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.policyPrefs.*.name",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.policyPrefs.*.value",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.credentials",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.assets",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.plugin",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.plugin.description",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.plugin.id.name",
+          "data_type": "string"
+        },
+        {
+          "data_path": "action_result.data.*.reports",
+          "data_type": "string"
         }
       ],
       "versions": "EQ(*)"
