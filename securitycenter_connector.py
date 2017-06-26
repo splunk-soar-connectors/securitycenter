@@ -208,7 +208,7 @@ class SecurityCenterConnector(BaseConnector):
 
         list_vuln_host = param[IP_HOSTNAME].strip()
         if (not ph_utils.is_ip(list_vuln_host)):
-            if len(list_vuln_host) > 255 or set(' ?/!"\'@#$%^&*(){};[]|:').intersection(list_vuln_host):
+            if len(list_vuln_host) > 255 or set(' !"\'@#$%^&*(){};[]|').intersection(list_vuln_host):
                 return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities.")
 
         if phantom.is_ip(list_vuln_host) is True:
