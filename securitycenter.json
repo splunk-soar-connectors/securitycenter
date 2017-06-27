@@ -1,7 +1,7 @@
 {
   "appid"       : "421c4b26-2254-41f0-8544-5619af2afa42",
   "name"      : "SecurityCenter",
-  "description" : "This app integrates with <b>Tenable's SecurityCenter</b> to provide endpoint-based <b>investigative</b> actions.",
+  "description" : "Take action with Tenable's SecurityCenter",
   "publisher": "Phantom",
   "package_name": "phantom_securitycenter",
   "type": "vulnerability scanner",
