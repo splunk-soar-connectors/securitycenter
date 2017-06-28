@@ -542,7 +542,7 @@
     {
       "action": "list policies",
       "description": "Lists the scan policies available in Tenable SecurityCenter",
-      "type": "generic",
+      "type": "investigate",
       "identifier": "list_policies",
       "read_only": true,
       "parameters": {},
