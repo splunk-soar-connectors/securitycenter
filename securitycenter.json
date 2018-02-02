@@ -119,7 +119,7 @@
                     "data_path": "action_result.data.*.id",
                     "data_type": "string",
                     "contains": [
-                        "SecurityCenter Scan ID"
+                        "securitycenter scan id"
                     ],
                     "column_name": "Scan ID",
                     "column_order": 6
@@ -128,7 +128,7 @@
                     "data_path": "action_result.data.*.scanResultID",
                     "data_type": "string",
                     "contains": [
-                        "SecurityCenter Scan Result ID"
+                        "securitycenter scan result id"
                     ],
                     "column_name": "Scan Result ID",
                     "column_order": 0
@@ -448,10 +448,6 @@
                         "ip",
                         "host name"
                     ]
-                },
-                {
-                    "data_path": "action_result.parameter.context",
-                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.status",
