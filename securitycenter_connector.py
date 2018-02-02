@@ -57,7 +57,6 @@ class SecurityCenterConnector(BaseConnector):
         except Exception as e:
             return self.set_status(phantom.APP_ERROR, "Failed to get/set token", e)
 
-        self.debug_print(self._session.headers)
         return phantom.APP_SUCCESS
 
     def finalize(self):
@@ -160,8 +159,6 @@ class SecurityCenterConnector(BaseConnector):
             self.append_to_message('Test connectivity failed')
             return self.get_status()
         else:
-            self.debug_print(self._session.headers["X-SecurityCenter"])
-            self.debug_print("In test connectivity, just before returning")
             return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to SecurityCenter was successful.")
 
     def _scan_endpoint(self, param):
