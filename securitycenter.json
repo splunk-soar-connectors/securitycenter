@@ -1,620 +1,617 @@
 {
-  "appid": "421c4b26-2254-41f0-8544-5619af2afa42",
-  "name": "SecurityCenter",
-  "description": "This app integrates with <b>Tenable's SecurityCenter</b> to provide endpoint-based <b>investigative</b> actions.",
-  "publisher": "Phantom",
-  "package_name": "phantom_securitycenter",
-  "type": "vulnerability scanner",
-  "license": "Copyright (c) Phantom Cyber Corporation 2017",
-  "main_module": "securitycenter_connector.pyc",
-  "app_version": "1.3.15",
-  "utctime_updated": "2018-12-07T01:06:23.000000Z",
-  "product_vendor": "Tenable",
-  "product_name": "SecurityCenter",
-  "product_version_regex": ".*",
-  "min_phantom_version": "2.1.467",
-  "logo": "securitycenter.png",
-  "configuration": {
-    "base_url": {
-      "description": "SecurityCenter instance URL (https://sc_instance.company.com)",
-      "data_type": "string",
-      "required": true,
-      "order": 0
-    },
-    "verify_server_cert": {
-      "data_type": "boolean",
-      "description": "Verify server certificate",
-      "required": true,
-      "order": 1,
-      "default": false
-    },
-    "username": {
-      "description": "Username",
-      "data_type": "string",
-      "required": true,
-      "order": 2
-    },
-    "password": {
-      "description": "Password",
-      "data_type": "password",
-      "required": true,
-      "order": 3
-    }
-  },
-  "actions": [
-    {
-      "action": "test connectivity",
-      "description": "Validate the asset configuration for connectivity.",
-      "type": "test",
-      "identifier": "test_asset_connectivity",
-      "read_only": true,
-      "parameters": {},
-      "output": [],
-      "versions": "EQ(*)"
-    },
-    {
-      "action": "scan endpoint",
-      "description": "Runs a scan against a specified IP or host.",
-      "type": "investigate",
-      "identifier": "scan_endpoint",
-      "read_only": true,
-      "parameters": {
-        "ip_hostname": {
-          "description": "IP/Hostname to scan (commas separated)",
-          "data_type": "string",
-          "contains": [
-            "ip",
-            "host name"
-          ],
-          "primary": true,
-          "required": true,
-          "allow_list": true
+    "appid": "421c4b26-2254-41f0-8544-5619af2afa42",
+    "name": "SecurityCenter",
+    "description": "This app integrates with <b>Tenable's SecurityCenter</b> to provide endpoint-based <b>investigative</b> actions.",
+    "publisher": "Phantom",
+    "package_name": "phantom_securitycenter",
+    "type": "vulnerability scanner",
+    "license": "Copyright (c) Phantom Cyber Corporation, 2017-2018",
+    "main_module": "securitycenter_connector.pyc",
+    "app_version": "1.3.15",
+    "utctime_updated": "2018-02-02T21:33:10.000000Z",
+    "product_vendor": "Tenable",
+    "product_name": "SecurityCenter",
+    "product_version_regex": ".*",
+    "min_phantom_version": "2.1.467",
+    "logo": "logo_securitycenter.svg",
+    "logo_dark": "logo_securitycenter_dark.svg",
+    "configuration": {
+        "base_url": {
+            "description": "SecurityCenter instance URL (https://sc_instance.company.com)",
+            "data_type": "string",
+            "required": true,
+            "order": 0
         },
-        "scan_policy_id": {
-          "description": "SecurityCenter Scan Policy ID to use",
-          "data_type": "numeric",
-          "contains": [
-            "securitycenter scan policy id"
-          ],
-          "required": true,
-          "primary": true
+        "verify_server_cert": {
+            "data_type": "boolean",
+            "description": "Verify server certificate",
+            "required": true,
+            "order": 1,
+            "default": false
+        },
+        "username": {
+            "description": "Username",
+            "data_type": "string",
+            "required": true,
+            "order": 2
+        },
+        "password": {
+            "description": "Password",
+            "data_type": "password",
+            "required": true,
+            "order": 3
         }
-      },
-      "render": {
-        "width": 12,
-        "title": "Scan Endpoint Info",
-        "type": "table",
-        "height": 5
-      },
-      "output": [
-        {
-          "data_path": "action_result.parameter.scan_policy_id",
-          "data_type": "numeric",
-          "contains": [
-            "securitycenter scan policy id"
-          ]
-        },
-        {
-          "data_path": "action_result.parameter.ip_hostname",
-          "data_type": "string",
-          "contains": [
-            "ip",
-            "host name"
-          ]
-        },
-        {
-          "data_path": "action_result.status",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.message",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.summary.name",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.id",
-          "data_type": "string",
-          "contains": [
-            "SecurityCenter Scan ID"
-          ],
-          "column_name": "Scan ID",
-          "column_order": 6
-        },
-        {
-          "data_path": "action_result.data.*.scanResultID",
-          "data_type": "string",
-          "contains": [
-            "SecurityCenter Scan Result ID"
-          ],
-          "column_name": "Scan Result ID",
-          "column_order": 0
-        },
-        {
-          "data_path": "action_result.data.*.ipList",
-          "data_type": "string",
-          "contains": [
-            "ip",
-            "host name"
-          ],
-          "column_name": "Scan Target(s)",
-          "column_order": 1
-        },
-        {
-          "data_path": "action_result.data.*.type",
-          "data_type": "string",
-          "contains": [],
-          "column_name": "Scan Type",
-          "column_order": 2
-        },
-        {
-          "data_path": "action_result.data.*.policy.id",
-          "data_type": "numeric",
-          "contains": [
-            "securitycenter scan policy id"
-          ],
-          "column_name": "Scan Policy ID",
-          "column_order": 3
-        },
-        {
-          "data_path": "action_result.data.*.policy.name",
-          "data_type": "string",
-          "contains": [],
-          "column_name": "Scan Policy Name",
-          "column_order": 4
-        },
-        {
-          "data_path": "action_result.data.*.name",
-          "data_type": "string",
-          "contains": [],
-          "column_name": "Scan Name",
-          "column_order": 5
-        },
-        {
-          "data_path": "action_result.data.*.emailOnLaunch",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.emailOnFinish",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.numDependents",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.classifyMitigatedAge",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.dhcpTracking",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.scanningVirtualHosts",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.canUse",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.modifiedTime",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.maxScanTime",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.rolloverType",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.status",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.canManage",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.description",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.timeoutAction",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.createdTime",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.error_code",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.error_msgaction_result.data.*.warnings",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.timestamp",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.zone",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.zone.description",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.zone.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.zone.name",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.response",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.creator",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.creator.username",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.creator.lastname",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.creator.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.creator.firstname",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.owner",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.owner.username",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.owner.lastname",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.owner.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.repository",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.repository.description",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.repository.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.repository.name",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.repeatRule",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.dependent",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.dependent.description",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.dependent.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.dependent.name",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.nextRun",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.start",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.type",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.schedule.objectType",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.ownerGroup",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.ownerGroup.description",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.ownerGroup.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.ownerGroup.name",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.policyPrefs",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.policyPrefs.*.name",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.policyPrefs.*.value",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.credentials",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.assets",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.plugin",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.plugin.description",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.plugin.id.name",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.reports",
-          "data_type": "string"
-        }
-      ],
-      "versions": "EQ(*)"
     },
-    {
-      "action": "list vulnerabilities",
-      "description": "Query SecurityCenter for a list of Vulnerabilities associated with an IP or host name",
-      "type": "investigate",
-      "identifier": "list_vulnerabilities",
-      "read_only": true,
-      "parameters": {
-        "ip_hostname": {
-          "description": "IP / host name of host to query",
-          "data_type": "string",
-          "contains": [
-            "ip",
-            "host name"
-          ],
-          "primary": true,
-          "required": true
+    "actions": [
+        {
+            "action": "test connectivity",
+            "description": "Validate the asset configuration for connectivity.",
+            "type": "test",
+            "identifier": "test_asset_connectivity",
+            "read_only": true,
+            "parameters": {},
+            "output": [],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "scan endpoint",
+            "description": "Runs a scan against a specified IP or host.",
+            "type": "investigate",
+            "identifier": "scan_endpoint",
+            "read_only": true,
+            "parameters": {
+                "ip_hostname": {
+                    "description": "IP/Hostname to scan (commas separated)",
+                    "data_type": "string",
+                    "contains": [
+                        "ip",
+                        "host name"
+                    ],
+                    "primary": true,
+                    "required": true,
+                    "allow_list": true
+                },
+                "scan_policy_id": {
+                    "description": "SecurityCenter Scan Policy ID to use",
+                    "data_type": "numeric",
+                    "contains": [
+                        "securitycenter scan policy id"
+                    ],
+                    "required": true,
+                    "primary": true
+                }
+            },
+            "render": {
+                "width": 12,
+                "title": "Scan Endpoint Info",
+                "type": "table",
+                "height": 5
+            },
+            "output": [
+                {
+                    "data_path": "action_result.parameter.scan_policy_id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "securitycenter scan policy id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.ip_hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "ip",
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "string",
+                    "contains": [
+                        "securitycenter scan id"
+                    ],
+                    "column_name": "Scan ID",
+                    "column_order": 6
+                },
+                {
+                    "data_path": "action_result.data.*.scanResultID",
+                    "data_type": "string",
+                    "contains": [
+                        "securitycenter scan result id"
+                    ],
+                    "column_name": "Scan Result ID",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.ipList",
+                    "data_type": "string",
+                    "contains": [
+                        "ip",
+                        "host name"
+                    ],
+                    "column_name": "Scan Target(s)",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.type",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Scan Type",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.data.*.policy.id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "securitycenter scan policy id"
+                    ],
+                    "column_name": "Scan Policy ID",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.policy.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Scan Policy Name",
+                    "column_order": 4
+                },
+                {
+                    "data_path": "action_result.data.*.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Scan Name",
+                    "column_order": 5
+                },
+                {
+                    "data_path": "action_result.data.*.emailOnLaunch",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.emailOnFinish",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.numDependents",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.classifyMitigatedAge",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.dhcpTracking",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.scanningVirtualHosts",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.canUse",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.modifiedTime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.maxScanTime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.rolloverType",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.status",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.canManage",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.timeoutAction",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.createdTime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.error_code",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.error_msgaction_result.data.*.warnings",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.timestamp",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.zone",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.zone.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.zone.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.zone.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator.username",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator.lastname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator.firstname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.owner",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.owner.username",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.owner.lastname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.owner.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.repository",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.repository.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.repository.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.repository.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.repeatRule",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.dependent",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.dependent.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.dependent.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.dependent.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.nextRun",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.start",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.type",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.objectType",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.ownerGroup",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.ownerGroup.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.ownerGroup.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.ownerGroup.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.policyPrefs",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.policyPrefs.*.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.policyPrefs.*.value",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.credentials",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.assets",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.plugin",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.plugin.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.plugin.id.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.reports",
+                    "data_type": "string"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "list vulnerabilities",
+            "description": "Query SecurityCenter for a list of Vulnerabilities associated with an IP or host name",
+            "type": "investigate",
+            "identifier": "list_vulnerabilities",
+            "read_only": true,
+            "parameters": {
+                "ip_hostname": {
+                    "description": "IP / host name of host to query",
+                    "data_type": "string",
+                    "contains": [
+                        "ip",
+                        "host name"
+                    ],
+                    "primary": true,
+                    "required": true
+                }
+            },
+            "render": {
+                "width": 18,
+                "title": "IP/Host Vulnerability Information",
+                "type": "table",
+                "height": 5
+            },
+            "output": [
+                {
+                    "data_path": "action_result.parameter.ip_hostname",
+                    "data_type": "string",
+                    "contains": [
+                        "ip",
+                        "host name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.total_vulnerabilities",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.critical_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.high_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.medium_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.low_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.info_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.severity.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Vuln Severity",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.pluginID",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Plugin ID",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Plugin Name",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.family.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Plugin Family Name",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.hostTotal",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.total",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.family.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.family.type",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.severity.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.severity.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.severity.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.endOffset",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.totalRecords",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.returnedRecords",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.startOffset",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.matchingDataElementCount",
+                    "data_type": "string"
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "list policies",
+            "description": "Lists the scan policies available in Tenable SecurityCenter",
+            "type": "investigate",
+            "identifier": "list_policies",
+            "read_only": true,
+            "parameters": {},
+            "render": {
+                "width": 12,
+                "title": "SecurityCenter Policies",
+                "type": "table",
+                "height": 5
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.usable.*.id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "securitycenter scan policy id"
+                    ],
+                    "column_name": "Usable Scan Policy ID",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.usable.*.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Scan Policy Name",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.manageable.*.id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "securitycenter scan policy id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.manageable.*.name",
+                    "data_type": "string",
+                    "contains": []
+                }
+            ],
+            "versions": "EQ(*)"
         }
-      },
-      "render": {
-        "width": 18,
-        "title": "IP/Host Vulnerability Information",
-        "type": "table",
-        "height": 5
-      },
-      "output": [
-        {
-          "data_path": "action_result.parameter.ip_hostname",
-          "data_type": "string",
-          "contains": [
-            "ip",
-            "host name"
-          ]
-        },
-        {
-          "data_path": "action_result.parameter.context",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.status",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.message",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.summary.total_vulnerabilities",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.summary.critical_vulns",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.summary.high_vulns",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.summary.medium_vulns",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.summary.low_vulns",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.summary.info_vulns",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.results.*.severity.name",
-          "data_type": "string",
-          "contains": [],
-          "column_name": "Vuln Severity",
-          "column_order": 0
-        },
-        {
-          "data_path": "action_result.data.*.results.*.pluginID",
-          "data_type": "string",
-          "contains": [],
-          "column_name": "Plugin ID",
-          "column_order": 1
-        },
-        {
-          "data_path": "action_result.data.*.results.*.name",
-          "data_type": "string",
-          "contains": [],
-          "column_name": "Plugin Name",
-          "column_order": 2
-        },
-        {
-          "data_path": "action_result.data.*.results.*.family.name",
-          "data_type": "string",
-          "contains": [],
-          "column_name": "Plugin Family Name",
-          "column_order": 3
-        },
-        {
-          "data_path": "action_result.data.*.results.*.hostTotal",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.results.*.total",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.results.*.family.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.results.*.family.type",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.results.*.severity.description",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.results.*.severity.id",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.results.*.severity.name",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.endOffset",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.totalRecords",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.returnedRecords",
-          "data_type": "numeric"
-        },
-        {
-          "data_path": "action_result.data.*.startOffset",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.matchingDataElementCount",
-          "data_type": "string"
-        }
-      ],
-      "versions": "EQ(*)"
-    },
-    {
-      "action": "list policies",
-      "description": "Lists the scan policies available in Tenable SecurityCenter",
-      "type": "investigate",
-      "identifier": "list_policies",
-      "read_only": true,
-      "parameters": {},
-      "render": {
-        "width": 12,
-        "title": "SecurityCenter Policies",
-        "type": "table",
-        "height": 5
-      },
-      "output": [
-        {
-          "data_path": "action_result.status",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.message",
-          "data_type": "string"
-        },
-        {
-          "data_path": "action_result.data.*.usable.*.id",
-          "data_type": "numeric",
-          "contains": [
-            "securitycenter scan policy id"
-          ],
-          "column_name": "Usable Scan Policy ID",
-          "column_order": 0
-        },
-        {
-          "data_path": "action_result.data.*.usable.*.name",
-          "data_type": "string",
-          "contains": [],
-          "column_name": "Scan Policy Name",
-          "column_order": 1
-        },
-        {
-          "data_path": "action_result.data.*.manageable.*.id",
-          "data_type": "numeric",
-          "contains": [
-            "securitycenter scan policy id"
-          ]
-        },
-        {
-          "data_path": "action_result.data.*.manageable.*.name",
-          "data_type": "string",
-          "contains": []
-        }
-      ],
-      "versions": "EQ(*)"
-    }
-  ]
+    ]
 }
