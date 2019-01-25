@@ -1,6 +1,8 @@
-*.py
-.git*
 .project
-.pyproject
-.DS_Store
+docker-compose.yml
+Makefile
 .gitignore*
+.pyproject
+.git*
+.DS_Store
+*.py
