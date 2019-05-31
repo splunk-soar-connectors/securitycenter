@@ -1187,7 +1187,7 @@
         },
         {
             "action": "update asset",
-            "description": "Update existing asset with provided fields or create a new one as a 'static' type.",
+            "description": "Update existing asset with provided fields or create a new one as a 'static' type",
             "verbose": "View SecurityCenter API docs for available fields to update.",
             "type": "generic",
             "identifier": "update_asset",
@@ -1537,7 +1537,7 @@
         },
         {
             "action": "update group",
-            "description": "Update existing group with provided fields.",
+            "description": "Update existing group with provided fields",
             "verbose": "View SecurityCenter API docs for available fields to update.",
             "type": "generic",
             "identifier": "update_group",
