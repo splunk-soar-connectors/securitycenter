@@ -273,6 +273,16 @@ class SecurityCenterConnector(BaseConnector):
 
         return clean_json
 
+    def load_dirty_json(self, dirty_json):
+        import re
+        regex_replace = [(r"([ \{,:\[])(u)?'([^']+)'", r'\1"\3"'), (r" False([, \}\]])", r' false\1'),
+                         (r" True([, \}\]])", r' true\1')]
+        for r, s in regex_replace:
+            dirty_json = re.sub(r, s, dirty_json)
+        clean_json = json.loads(dirty_json)
+
+        return clean_json
+
     def _test_connectivity(self):
 
         self.save_progress("Checking connectivity to your SecurityCenter instance...")
