@@ -22,6 +22,7 @@ import phantom.utils as ph_utils
 import requests
 import datetime
 import json
+import time
 from bs4 import BeautifulSoup
 from securitycenter_consts import *
 
@@ -32,6 +33,8 @@ class SecurityCenterConnector(BaseConnector):
     ACTION_ID_SCAN_ENDPOINT = "scan_endpoint"
     ACTION_ID_LIST_SCAN_POLICIES = "list_policies"
     ACTION_ID_GET_IP_VULNERABILITIES = "list_vulnerabilities"
+    ACTION_ID_UPDATE_ASSET = "update_asset"
+    ACTION_ID_UPDATE_GROUP = "update_group"
 
     def __init__(self):
 
@@ -39,23 +42,94 @@ class SecurityCenterConnector(BaseConnector):
         super(SecurityCenterConnector, self).__init__()
         self._verify = None
 
+    def _get_token(self):
+
+        config = self.get_config()
+
+        rjson = {}
+        error_msg = None
+        for retry in range(1, self._retry_count + 1):
+
+            self._session = requests.Session()
+            self._session.headers = {'Content-type': 'application/json', 'accept': 'application/json'}
+            auth_data = {"username": config["username"], "password": config["password"]}
+
+            if retry > 1:
+                self.save_progress("Failed.")
+                self.save_progress("Waiting for {} seconds until retry".format(self._retry_wait))
+                time.sleep(self._retry_wait)
+
+            self.save_progress("Getting token for session...; try #{}".format(retry))
+            r = None
+            error_msg = None
+            try:
+                r = self._session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
+                self.save_progress("Request Completed")
+
+            except Exception as e:
+                self.save_progress("Request Exception")
+                error_msg = "Error: connection error with server; {}".format(e)
+                self.save_progress(error_msg)
+
+            if r == None:
+                error_msg = "Error: no response from server"
+                self.save_progress(error_msg)
+                continue
+
+            rjson = {}
+            try:
+                rjson = r.json()
+                #print(json.dumps(rjson, indent=4))
+
+            except Exception as e:
+                #print("Exception: {}".format(e))
+                #print("status_code: {}".format(r.status_code))
+                #print("Text")
+                #print(r.text)
+                pass
+
+            if len(rjson) == 0:
+                error_msg = "Error: response not json compliant"
+                self.save_progress(error_msg)
+                continue
+
+            if rjson.get('error_code'):
+                error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n',' ').strip())
+                self.save_progress(error_msg)
+                continue
+
+            token = rjson.get("response") or {}
+            token = token.get("token") or None
+            if not isinstance(token, int):
+                error_msg = "Error: token is not numeric"
+                self.save_progress(error_msg)
+                continue
+                
+            self._session.headers.update({'X-SecurityCenter': str(token)})
+            self._good_token = True
+            return self.set_status(phantom.APP_SUCCESS)
+
+        if rjson.get('error_code'):
+            error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n',' ').strip())
+            self.save_progress(error_msg)
+            
+        self.save_progress("Error: Exceeded number of retries to get token; {}".format(error_msg))
+        return self.set_status(phantom.APP_ERROR, "Error: Exceeded number of retries to get token; {}".format(error_msg))
+
     def initialize(self):
+
+        self._good_token = False
 
         config = self.get_config()
         self._verify = config["verify_server_cert"]
         self._rest_url = config["base_url"]
+        self._retry_count = int(config['retry_count'])
+        self._retry_wait = int(config['retry_wait'])
 
-        self._session = requests.Session()
-        auth_data = {"username": config["username"], "password": config["password"]}
-        self._session.headers = {'Content-type': 'application/json', 'accept': 'application/json'}
-
-        self.save_progress("Getting token for session...")
-        try:
-            auth_resp = self._session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
-            auth_resp_json = auth_resp.json()
-            self._session.headers.update({'X-SecurityCenter': str(auth_resp_json['response']['token'])})
-        except Exception as e:
-            return self.set_status(phantom.APP_ERROR, "Failed to get/set token", e)
+        status = self._get_token()
+        if phantom.is_fail(status):
+            print("Returning error in initialize")
+            return self.get_status()
 
         return phantom.APP_SUCCESS
 
@@ -144,12 +218,70 @@ class SecurityCenterConnector(BaseConnector):
             # Set the action_result status to error, the handler function will most probably return as is
             return action_result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(str(e))), None
 
-        try:
-            r = request_func(url, params=params, json=json, verify=self._verify)
-        except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, "REST API to server failed: ", e), None
+        rjson = {}
+        error_msg = None
+        for retry in range(1, self._retry_count + 1):
 
-        return self._process_response(r, action_result)
+            if retry > 1:
+                self.save_progress("Failed.")
+                self.save_progress("Waiting for {} seconds until retry".format(self._retry_wait))
+                time.sleep(self._retry_wait)
+
+            self.save_progress("Making REST call...; try #{}".format(retry))
+            r = None
+            error_msg = None
+            try:
+                r = request_func(url, params=params, json=json, verify=self._verify)
+                self.save_progress("Request Completed")
+
+            except Exception as e:
+                self.save_progress("Request Exception")
+                error_msg = "Error: connection error with server; {}".format(e)
+                self.save_progress(error_msg)
+
+            if r == None:
+                error_msg = "Error: no response from server"
+                self.save_progress(error_msg)
+                continue
+
+            rjson = {}
+            try:
+                # because json is a parameter
+                import json as jjson
+                rjson = r.json()
+                #print(jjson.dumps(rjson, indent=4))
+
+            except Exception as e:
+                #print("Exception: {}".format(e))
+                #print("status_code: {}".format(r.status_code))
+                #print("Text")
+                #print(r.text)
+                pass
+
+            if len(rjson) == 0:
+                error_msg = "Error: response not json compliant"
+                self.save_progress(error_msg)
+                continue
+
+            if rjson.get('error_code'):
+                error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n',' ').strip())
+                self.send_progress(error_msg)
+                continue
+
+            return self._process_response(r, action_result)
+
+        self.save_progress("Error: Failed to make REST call; {}".format(error_msg))
+        return action_result.set_status(phantom.APP_ERROR, "REST API to server failed: ", error_msg), None
+
+    def load_dirty_json(self, dirty_json):
+        import re
+        regex_replace = [(r"([ \{,:\[])(u)?'([^']+)'", r'\1"\3"'), (r" False([, \}\]])", r' false\1'),
+                         (r" True([, \}\]])", r' true\1')]
+        for r, s in regex_replace:
+            dirty_json = re.sub(r, s, dirty_json)
+        clean_json = json.loads(dirty_json)
+
+        return clean_json
 
     def _test_connectivity(self):
 
@@ -285,6 +417,81 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
+    def _update_asset(self, param):
+        """
+        Update asset with provided name and fields. Creates new asset if it doesn't exist.
+        """
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        asset_name = param['asset_name']
+        update_fields = self.load_dirty_json(param['update_fields'])
+
+        endpoint = '/asset'
+
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result, params={'fields': 'id,name'})
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        for sc_asset in resp_json['response']['manageable'] + resp_json['response']['usable']:
+            if sc_asset['name'] == asset_name:
+                self.save_progress('Asset found, attempting to update it.')
+                endpoint = '{}/{}'.format(endpoint, sc_asset['id'])
+
+                ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
+                if phantom.is_fail(ret_val):
+                    return action_result.get_status()
+
+                action_result.add_data(resp_json)
+
+                return action_result.set_status(phantom.APP_SUCCESS, 'Successfully updated asset.')
+
+        self.save_progress('Asset does not exist, attempting to create it.')
+        # Asset doesn't exist, creating new one with provided name.
+        if 'type' not in update_fields:
+            update_fields['type'] = 'static'
+
+        update_fields['name'] = asset_name
+
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="post")
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        action_result.add_data(resp_json)
+
+        return action_result.set_status(phantom.APP_SUCCESS, 'Successfully created new asset.')
+
+    def _update_group(self, param):
+        """
+        Update group with provided name and fields. Returns error if the group doesn't exist.
+        """
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        group_name = param['group_name']
+        update_fields = self.load_dirty_json(param['update_fields'])
+
+        endpoint = '/group'
+
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result, params={'fields': 'id,name'})
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        for sc_group in resp_json['response']:
+            if sc_group['name'] == group_name:
+                self.save_progress('Group found, attempting to update it.')
+                endpoint = '{}/{}'.format(endpoint, sc_group['id'])
+
+                ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
+                if phantom.is_fail(ret_val):
+                    return action_result.get_status()
+
+                action_result.add_data(resp_json)
+
+                return action_result.set_status(phantom.APP_SUCCESS, 'Successfully updated group.')
+
+        # Group does not exist
+        message = 'Group ({}) not found.'.format(group_name)
+        return action_result.set_status(phantom.APP_ERROR, message)
+
     def handle_action(self, param):
 
         ret_val = phantom.APP_SUCCESS
@@ -296,10 +503,14 @@ class SecurityCenterConnector(BaseConnector):
 
         if (action_id == self.ACTION_ID_GET_IP_VULNERABILITIES):
             ret_val = self._list_vulnerabilities(param)
-        if (action_id == self.ACTION_ID_SCAN_ENDPOINT):
+        elif (action_id == self.ACTION_ID_SCAN_ENDPOINT):
             ret_val = self._scan_endpoint(param)
-        if (action_id == self.ACTION_ID_LIST_SCAN_POLICIES):
+        elif (action_id == self.ACTION_ID_LIST_SCAN_POLICIES):
             ret_val = self._list_policies(param)
+        elif (action_id == self.ACTION_ID_UPDATE_ASSET):
+            ret_val = self._update_asset(param)
+        elif (action_id == self.ACTION_ID_UPDATE_GROUP):
+            ret_val = self._update_group(param)
         elif (action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY):
             ret_val = self._test_connectivity()
 
