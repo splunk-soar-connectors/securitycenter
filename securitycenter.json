@@ -29,17 +29,31 @@
             "order": 1,
             "default": false
         },
+        "retry_count": {
+            "description": "Maximum attempts to retry api call if database locked errors",
+            "data_type": "numeric",
+            "default": 5,
+            "required": false,
+            "order": 2
+        },
+        "retry_wait": {
+            "description": "Delay in seconds between retries",
+            "data_type": "numeric",
+            "default": 30,
+            "required": false,
+            "order": 3
+        },
         "username": {
             "description": "Username",
             "data_type": "string",
             "required": true,
-            "order": 2
+            "order": 4
         },
         "password": {
             "description": "Password",
             "data_type": "password",
             "required": true,
-            "order": 3
+            "order": 5
         }
     },
     "actions": [
@@ -609,6 +623,546 @@
                     "data_path": "action_result.data.*.manageable.*.name",
                     "data_type": "string",
                     "contains": []
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "update asset",
+            "description": "Update existing asset with provided fields or create a new one as a 'static' type",
+            "verbose": "View SecurityCenter API docs for available fields to update.",
+            "type": "generic",
+            "identifier": "update_asset",
+            "read_only": false,
+            "parameters": {
+                "asset_name": {
+                    "description": "Name of asset to update",
+                    "data_type": "string",
+                    "primary": true,
+                    "required": true,
+                    "order": 0
+                },
+                "update_fields": {
+                    "description": "Fields to use for updating the asset (JSON String)",
+                    "data_type": "string",
+                    "required": true,
+                    "order": 1
+                }
+            },
+            "render": {
+                "width": 12,
+                "title": "Update asset",
+                "type": "table",
+                "height": 5
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.timestamp",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1559157366
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.canUse",
+                    "data_type": "string",
+                    "example_values": [
+                        "true"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.canManage",
+                    "data_type": "string",
+                    "example_values": [
+                        "true"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.targetGroup.description",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.targetGroup.name",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.targetGroup.id",
+                    "data_type": "numeric",
+                    "example_values": [
+                        -1
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "XX_REPO"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.modifiedTime",
+                    "data_type": "string",
+                    "example_values": [
+                        "1559157366"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.tags",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.creator.username",
+                    "data_type": "string",
+                    "example_values": [
+                        "user"
+                    ],
+                    "contains": [
+                        "user name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.creator.lastname",
+                    "data_type": "string",
+                    "example_values": [
+                        "LastName"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.creator.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "148"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.creator.firstname",
+                    "data_type": "string",
+                    "example_values": [
+                        "FirstName"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.repositories.*.repository.description",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.repositories.*.repository.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "TEST_REPO"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.repositories.*.repository.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "1"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.repositories.*.ipCount",
+                    "data_type": "string",
+                    "example_values": [
+                        "-1"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.typeFields.definedIPs",
+                    "data_type": "string",
+                    "example_values": [
+                        "1.1.1.1"
+                    ],
+                    "contains": [
+                        "ip"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.template.description",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.template.name",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.template.id",
+                    "data_type": "numeric",
+                    "example_values": [
+                        -1
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.ipCount",
+                    "data_type": "numeric",
+                    "example_values": [
+                        -1
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.ownerGroup.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.ownerGroup.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "Full Access"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.ownerGroup.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.owner.username",
+                    "data_type": "string",
+                    "example_values": [
+                        "username"
+                    ],
+                    "contains": [
+                        "user name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.owner.lastname",
+                    "data_type": "string",
+                    "example_values": [
+                        "LastName"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.owner.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "148"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.owner.firstname",
+                    "data_type": "string",
+                    "example_values": [
+                        "FirstName"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.context",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.createdTime",
+                    "data_type": "string",
+                    "example_values": [
+                        "1559156157"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.type",
+                    "data_type": "string",
+                    "example_values": [
+                        "static"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "893"
+                    ],
+                    "column_name": "Asset ID",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.response.description",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ],
+                    "column_name": "Asset Description",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.type",
+                    "data_type": "string",
+                    "example_values": [
+                        "regular"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.error_code",
+                    "data_type": "numeric",
+                    "example_values": [
+                        0
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.error_msg",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Successfully updated asset."
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.asset_name",
+                    "data_type": "string",
+                    "example_values": [
+                        "XX_REPO"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.update_fields",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"definedIPs\": \"1.1.1.1\"}"
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "update group",
+            "description": "Update existing group with provided fields",
+            "verbose": "View SecurityCenter API docs for available fields to update.",
+            "type": "generic",
+            "identifier": "update_group",
+            "read_only": false,
+            "parameters": {
+                "group_name": {
+                    "description": "Name of group to update",
+                    "data_type": "string",
+                    "primary": true,
+                    "required": true,
+                    "order": 0
+                },
+                "update_fields": {
+                    "description": "Fields to use for updating the group (JSON String)",
+                    "data_type": "string",
+                    "required": true,
+                    "order": 1
+                }
+            },
+            "render": {
+                "width": 12,
+                "title": "Update group",
+                "type": "table",
+                "height": 5
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.timestamp",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1559161525
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.description",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.modifiedTime",
+                    "data_type": "string",
+                    "example_values": [
+                        "1559161525"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.definingAssets.*.description",
+                    "data_type": "string",
+                    "example_values": [
+                        "All defining ranges of the Group in whose context this Asset is being evaluated."
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.definingAssets.*.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "All Defined Assets"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.definingAssets.*.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "64"
+                    ],
+                    "column_name": "Group ID",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.response.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "XX"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.assets.*.description",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ],
+                    "column_name": "Description",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.response.assets.*.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "XX_REPO"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.assets.*.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "893"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.createdTime",
+                    "data_type": "string",
+                    "example_values": [
+                        "1559161314"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.userCount",
+                    "data_type": "numeric",
+                    "example_values": [
+                        0
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.type",
+                    "data_type": "string",
+                    "example_values": [
+                        "regular"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.error_code",
+                    "data_type": "numeric",
+                    "example_values": [
+                        0
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.error_msg",
+                    "data_type": "string",
+                    "example_values": [
+                        ""
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Successfully updated group."
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.update_fields",
+                    "data_type": "string",
+                    "example_values": [
+                        "{\"assets\": [{\"id\": \"893\"}]}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.group_name",
+                    "data_type": "string",
+                    "example_values": [
+                        "XX"
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
