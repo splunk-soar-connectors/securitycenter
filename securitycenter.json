@@ -5,14 +5,15 @@
     "publisher": "Phantom",
     "package_name": "phantom_securitycenter",
     "type": "vulnerability scanner",
-    "license": "Copyright (c) Phantom Cyber Corporation, 2017-2018",
+    "license": "Copyright (c) 2017-2020 Splunk Inc.",
     "main_module": "securitycenter_connector.pyc",
     "app_version": "1.3.16",
-    "utctime_updated": "2019-01-24T21:56:12.000000Z",
+    "utctime_updated": "2020-07-08T16:16:15.105817Z",
     "product_vendor": "Tenable",
     "product_name": "SecurityCenter",
     "product_version_regex": ".*",
-    "min_phantom_version": "2.1.467",
+    "min_phantom_version": "4.8.24304",
+    "python_version": "2.7",
     "logo": "logo_securitycenter.svg",
     "logo_dark": "logo_securitycenter_dark.svg",
     "configuration": {
@@ -103,11 +104,8 @@
             },
             "output": [
                 {
-                    "data_path": "action_result.parameter.scan_policy_id",
-                    "data_type": "numeric",
-                    "contains": [
-                        "securitycenter scan policy id"
-                    ]
+                    "data_path": "action_result.status",
+                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.parameter.ip_hostname",
@@ -118,15 +116,78 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.status",
+                    "data_path": "action_result.parameter.scan_policy_id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "securitycenter scan policy id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.assets",
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.message",
+                    "data_path": "action_result.data.*.canManage",
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.summary.name",
+                    "data_path": "action_result.data.*.canUse",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.classifyMitigatedAge",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.createdTime",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator.firstname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator.lastname",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.creator.username",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.credentials",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.dhcpTracking",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.emailOnFinish",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.emailOnLaunch",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.error_code",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.error_msgaction_result.data.*.warnings",
                     "data_type": "string"
                 },
                 {
@@ -139,15 +200,6 @@
                     "column_order": 6
                 },
                 {
-                    "data_path": "action_result.data.*.scanResultID",
-                    "data_type": "string",
-                    "contains": [
-                        "securitycenter scan result id"
-                    ],
-                    "column_name": "Scan Result ID",
-                    "column_order": 0
-                },
-                {
                     "data_path": "action_result.data.*.ipList",
                     "data_type": "string",
                     "contains": [
@@ -158,27 +210,12 @@
                     "column_order": 1
                 },
                 {
-                    "data_path": "action_result.data.*.type",
-                    "data_type": "string",
-                    "contains": [],
-                    "column_name": "Scan Type",
-                    "column_order": 2
+                    "data_path": "action_result.data.*.maxScanTime",
+                    "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.*.policy.id",
-                    "data_type": "numeric",
-                    "contains": [
-                        "securitycenter scan policy id"
-                    ],
-                    "column_name": "Scan Policy ID",
-                    "column_order": 3
-                },
-                {
-                    "data_path": "action_result.data.*.policy.name",
-                    "data_type": "string",
-                    "contains": [],
-                    "column_name": "Scan Policy Name",
-                    "column_order": 4
+                    "data_path": "action_result.data.*.modifiedTime",
+                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.data.*.name",
@@ -188,115 +225,7 @@
                     "column_order": 5
                 },
                 {
-                    "data_path": "action_result.data.*.emailOnLaunch",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.emailOnFinish",
-                    "data_type": "string"
-                },
-                {
                     "data_path": "action_result.data.*.numDependents",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.classifyMitigatedAge",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.dhcpTracking",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.scanningVirtualHosts",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.canUse",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.modifiedTime",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.maxScanTime",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.rolloverType",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.status",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.canManage",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.description",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.timeoutAction",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.createdTime",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.error_code",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.error_msgaction_result.data.*.warnings",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.timestamp",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.zone",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.zone.description",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.zone.id",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.zone.name",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.response",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.creator",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.creator.username",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.creator.lastname",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.creator.id",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.creator.firstname",
                     "data_type": "string"
                 },
                 {
@@ -304,7 +233,7 @@
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.*.owner.username",
+                    "data_path": "action_result.data.*.owner.id",
                     "data_type": "string"
                 },
                 {
@@ -312,67 +241,7 @@
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.*.owner.id",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.repository",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.repository.description",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.repository.id",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.repository.name",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.repeatRule",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.dependent",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.dependent.description",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.dependent.id",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.dependent.name",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.nextRun",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.start",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.type",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.id",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.schedule.objectType",
+                    "data_path": "action_result.data.*.owner.username",
                     "data_type": "string"
                 },
                 {
@@ -392,26 +261,6 @@
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.*.policyPrefs",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.policyPrefs.*.name",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.policyPrefs.*.value",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.credentials",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.assets",
-                    "data_type": "string"
-                },
-                {
                     "data_path": "action_result.data.*.plugin",
                     "data_type": "string"
                 },
@@ -424,7 +273,158 @@
                     "data_type": "string"
                 },
                 {
+                    "data_path": "action_result.data.*.policy.id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "securitycenter scan policy id"
+                    ],
+                    "column_name": "Scan Policy ID",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.policy.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Scan Policy Name",
+                    "column_order": 4
+                },
+                {
+                    "data_path": "action_result.data.*.policyPrefs",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.policyPrefs.*.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.policyPrefs.*.value",
+                    "data_type": "string"
+                },
+                {
                     "data_path": "action_result.data.*.reports",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.repository",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.repository.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.repository.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.repository.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.rolloverType",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.scanResultID",
+                    "data_type": "string",
+                    "contains": [
+                        "securitycenter scan result id"
+                    ],
+                    "column_name": "Scan Result ID",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.scanningVirtualHosts",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.dependent",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.dependent.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.dependent.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.dependent.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.nextRun",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.objectType",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.repeatRule",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.start",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.schedule.type",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.status",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.timeoutAction",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.timestamp",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.type",
+                    "data_type": "string",
+                    "column_name": "Scan Type",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.data.*.zone",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.zone.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.zone.id",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.zone.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
                     "data_type": "string"
                 }
             ],
@@ -456,6 +456,10 @@
             },
             "output": [
                 {
+                    "data_path": "action_result.status",
+                    "data_type": "string"
+                },
+                {
                     "data_path": "action_result.parameter.ip_hostname",
                     "data_type": "string",
                     "contains": [
@@ -464,57 +468,16 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.status",
+                    "data_path": "action_result.data.*.endOffset",
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.message",
+                    "data_path": "action_result.data.*.matchingDataElementCount",
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.summary.total_vulnerabilities",
+                    "data_path": "action_result.data.*.results.*.family.id",
                     "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.summary.critical_vulns",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.summary.high_vulns",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.summary.medium_vulns",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.summary.low_vulns",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.summary.info_vulns",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.results.*.severity.name",
-                    "data_type": "string",
-                    "contains": [],
-                    "column_name": "Vuln Severity",
-                    "column_order": 0
-                },
-                {
-                    "data_path": "action_result.data.*.results.*.pluginID",
-                    "data_type": "string",
-                    "contains": [],
-                    "column_name": "Plugin ID",
-                    "column_order": 1
-                },
-                {
-                    "data_path": "action_result.data.*.results.*.name",
-                    "data_type": "string",
-                    "contains": [],
-                    "column_name": "Plugin Name",
-                    "column_order": 2
                 },
                 {
                     "data_path": "action_result.data.*.results.*.family.name",
@@ -524,20 +487,26 @@
                     "column_order": 3
                 },
                 {
+                    "data_path": "action_result.data.*.results.*.family.type",
+                    "data_type": "string"
+                },
+                {
                     "data_path": "action_result.data.*.results.*.hostTotal",
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.*.results.*.total",
-                    "data_type": "string"
+                    "data_path": "action_result.data.*.results.*.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Plugin Name",
+                    "column_order": 2
                 },
                 {
-                    "data_path": "action_result.data.*.results.*.family.id",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.results.*.family.type",
-                    "data_type": "string"
+                    "data_path": "action_result.data.*.results.*.pluginID",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Plugin ID",
+                    "column_order": 1
                 },
                 {
                     "data_path": "action_result.data.*.results.*.severity.description",
@@ -549,14 +518,17 @@
                 },
                 {
                     "data_path": "action_result.data.*.results.*.severity.name",
+                    "data_type": "string",
+                    "contains": [],
+                    "column_name": "Vuln Severity",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.results.*.severity.name",
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.*.endOffset",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.totalRecords",
+                    "data_path": "action_result.data.*.results.*.total",
                     "data_type": "string"
                 },
                 {
@@ -568,7 +540,35 @@
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.*.matchingDataElementCount",
+                    "data_path": "action_result.data.*.totalRecords",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.critical_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.high_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.info_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.low_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.medium_vulns",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.total_vulnerabilities",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.message",
                     "data_type": "string"
                 }
             ],
@@ -593,8 +593,16 @@
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.message",
-                    "data_type": "string"
+                    "data_path": "action_result.data.*.manageable.*.id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "securitycenter scan policy id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.manageable.*.name",
+                    "data_type": "string",
+                    "contains": []
                 },
                 {
                     "data_path": "action_result.data.*.usable.*.id",
@@ -613,16 +621,12 @@
                     "column_order": 1
                 },
                 {
-                    "data_path": "action_result.data.*.manageable.*.id",
-                    "data_type": "numeric",
-                    "contains": [
-                        "securitycenter scan policy id"
-                    ]
+                    "data_path": "action_result.summary",
+                    "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.*.manageable.*.name",
-                    "data_type": "string",
-                    "contains": []
+                    "data_path": "action_result.message",
+                    "data_type": "string"
                 }
             ],
             "versions": "EQ(*)"
@@ -638,7 +642,7 @@
                 "asset_name": {
                     "description": "Name of asset to update",
                     "data_type": "string",
-                    "primary": true,
+                    "primary": false,
                     "required": true,
                     "order": 0
                 },
@@ -664,17 +668,35 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.timestamp",
-                    "data_type": "numeric",
+                    "data_path": "action_result.parameter.asset_name",
+                    "data_type": "string",
                     "example_values": [
-                        1559157366
+                        "XX_REPO"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.status",
+                    "data_path": "action_result.parameter.update_fields",
                     "data_type": "string",
                     "example_values": [
-                        "0"
+                        "{\"definedIPs\": \"1.1.1.1\"}"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.error_code",
+                    "data_type": "numeric",
+                    "example_values": [
+                        0
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.error_msg",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.canManage",
+                    "data_type": "string",
+                    "example_values": [
+                        "true"
                     ]
                 },
                 {
@@ -685,52 +707,35 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.canManage",
+                    "data_path": "action_result.data.*.response.context",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.createdTime",
                     "data_type": "string",
                     "example_values": [
-                        "true"
+                        "1559156157"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.targetGroup.description",
+                    "data_path": "action_result.data.*.response.creator.firstname",
                     "data_type": "string",
                     "example_values": [
-                        ""
+                        "FirstName"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.targetGroup.name",
+                    "data_path": "action_result.data.*.response.creator.id",
                     "data_type": "string",
                     "example_values": [
-                        ""
+                        "148"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.targetGroup.id",
-                    "data_type": "numeric",
-                    "example_values": [
-                        -1
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.name",
+                    "data_path": "action_result.data.*.response.creator.lastname",
                     "data_type": "string",
                     "example_values": [
-                        "XX_REPO"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.modifiedTime",
-                    "data_type": "string",
-                    "example_values": [
-                        "1559157366"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.tags",
-                    "data_type": "string",
-                    "example_values": [
-                        ""
+                        "LastName"
                     ]
                 },
                 {
@@ -744,84 +749,19 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.creator.lastname",
+                    "data_path": "action_result.data.*.response.description",
                     "data_type": "string",
-                    "example_values": [
-                        "LastName"
-                    ]
+                    "column_name": "Asset Description",
+                    "column_order": 1
                 },
                 {
-                    "data_path": "action_result.data.*.response.creator.id",
+                    "data_path": "action_result.data.*.response.id",
                     "data_type": "string",
                     "example_values": [
-                        "148"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.creator.firstname",
-                    "data_type": "string",
-                    "example_values": [
-                        "FirstName"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.repositories.*.repository.description",
-                    "data_type": "string",
-                    "example_values": [
-                        ""
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.repositories.*.repository.name",
-                    "data_type": "string",
-                    "example_values": [
-                        "TEST_REPO"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.repositories.*.repository.id",
-                    "data_type": "string",
-                    "example_values": [
-                        "1"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.repositories.*.ipCount",
-                    "data_type": "string",
-                    "example_values": [
-                        "-1"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.typeFields.definedIPs",
-                    "data_type": "string",
-                    "example_values": [
-                        "1.1.1.1"
+                        "893"
                     ],
-                    "contains": [
-                        "ip"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.template.description",
-                    "data_type": "string",
-                    "example_values": [
-                        ""
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.template.name",
-                    "data_type": "string",
-                    "example_values": [
-                        ""
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.template.id",
-                    "data_type": "numeric",
-                    "example_values": [
-                        -1
-                    ]
+                    "column_name": "Asset ID",
+                    "column_order": 0
                 },
                 {
                     "data_path": "action_result.data.*.response.ipCount",
@@ -831,21 +771,38 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.ownerGroup.description",
-                    "data_type": "string"
-                },
-                {
-                    "data_path": "action_result.data.*.response.ownerGroup.name",
+                    "data_path": "action_result.data.*.response.modifiedTime",
                     "data_type": "string",
                     "example_values": [
-                        "Full Access"
+                        "1559157366"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.ownerGroup.id",
+                    "data_path": "action_result.data.*.response.name",
                     "data_type": "string",
                     "example_values": [
-                        "0"
+                        "XX_REPO"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.owner.firstname",
+                    "data_type": "string",
+                    "example_values": [
+                        "FirstName"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.owner.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "148"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.owner.lastname",
+                    "data_type": "string",
+                    "example_values": [
+                        "LastName"
                     ]
                 },
                 {
@@ -859,39 +816,88 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.owner.lastname",
+                    "data_path": "action_result.data.*.response.ownerGroup.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.ownerGroup.id",
                     "data_type": "string",
                     "example_values": [
-                        "LastName"
+                        "0"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.owner.id",
+                    "data_path": "action_result.data.*.response.ownerGroup.name",
                     "data_type": "string",
                     "example_values": [
-                        "148"
+                        "Full Access"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.owner.firstname",
+                    "data_path": "action_result.data.*.response.repositories.*.ipCount",
                     "data_type": "string",
                     "example_values": [
-                        "FirstName"
+                        "-1"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.context",
+                    "data_path": "action_result.data.*.response.repositories.*.repository.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.repositories.*.repository.id",
                     "data_type": "string",
                     "example_values": [
-                        ""
+                        "1"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.createdTime",
+                    "data_path": "action_result.data.*.response.repositories.*.repository.name",
                     "data_type": "string",
                     "example_values": [
-                        "1559156157"
+                        "TEST_REPO"
                     ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.tags",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.targetGroup.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.targetGroup.id",
+                    "data_type": "numeric",
+                    "example_values": [
+                        -1
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.targetGroup.name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.template.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.template.id",
+                    "data_type": "numeric",
+                    "example_values": [
+                        -1
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.template.name",
+                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.data.*.response.type",
@@ -901,22 +907,21 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.id",
+                    "data_path": "action_result.data.*.response.typeFields.definedIPs",
                     "data_type": "string",
                     "example_values": [
-                        "893"
+                        "1.1.1.1"
                     ],
-                    "column_name": "Asset ID",
-                    "column_order": 0
+                    "contains": [
+                        "ip"
+                    ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.description",
-                    "data_type": "string",
+                    "data_path": "action_result.data.*.timestamp",
+                    "data_type": "numeric",
                     "example_values": [
-                        ""
-                    ],
-                    "column_name": "Asset Description",
-                    "column_order": 1
+                        1559157366
+                    ]
                 },
                 {
                     "data_path": "action_result.data.*.type",
@@ -926,38 +931,14 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.error_code",
-                    "data_type": "numeric",
-                    "example_values": [
-                        0
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.error_msg",
-                    "data_type": "string",
-                    "example_values": [
-                        ""
-                    ]
+                    "data_path": "action_result.summary",
+                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.message",
                     "data_type": "string",
                     "example_values": [
                         "Successfully updated asset."
-                    ]
-                },
-                {
-                    "data_path": "action_result.parameter.asset_name",
-                    "data_type": "string",
-                    "example_values": [
-                        "XX_REPO"
-                    ]
-                },
-                {
-                    "data_path": "action_result.parameter.update_fields",
-                    "data_type": "string",
-                    "example_values": [
-                        "{\"definedIPs\": \"1.1.1.1\"}"
                     ]
                 },
                 {
@@ -1014,105 +995,17 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.timestamp",
-                    "data_type": "numeric",
-                    "example_values": [
-                        1559161525
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.description",
-                    "data_type": "string",
-                    "example_values": [
-                        ""
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.modifiedTime",
-                    "data_type": "string",
-                    "example_values": [
-                        "1559161525"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.definingAssets.*.description",
-                    "data_type": "string",
-                    "example_values": [
-                        "All defining ranges of the Group in whose context this Asset is being evaluated."
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.definingAssets.*.name",
-                    "data_type": "string",
-                    "example_values": [
-                        "All Defined Assets"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.definingAssets.*.id",
-                    "data_type": "string",
-                    "example_values": [
-                        "0"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.id",
-                    "data_type": "string",
-                    "example_values": [
-                        "64"
-                    ],
-                    "column_name": "Group ID",
-                    "column_order": 0
-                },
-                {
-                    "data_path": "action_result.data.*.response.name",
+                    "data_path": "action_result.parameter.group_name",
                     "data_type": "string",
                     "example_values": [
                         "XX"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.response.assets.*.description",
+                    "data_path": "action_result.parameter.update_fields",
                     "data_type": "string",
                     "example_values": [
-                        ""
-                    ],
-                    "column_name": "Description",
-                    "column_order": 1
-                },
-                {
-                    "data_path": "action_result.data.*.response.assets.*.name",
-                    "data_type": "string",
-                    "example_values": [
-                        "XX_REPO"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.assets.*.id",
-                    "data_type": "string",
-                    "example_values": [
-                        "893"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.createdTime",
-                    "data_type": "string",
-                    "example_values": [
-                        "1559161314"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.response.userCount",
-                    "data_type": "numeric",
-                    "example_values": [
-                        0
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.type",
-                    "data_type": "string",
-                    "example_values": [
-                        "regular"
+                        "{\"assets\": [{\"id\": \"893\"}]}"
                     ]
                 },
                 {
@@ -1124,30 +1017,113 @@
                 },
                 {
                     "data_path": "action_result.data.*.error_msg",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.assets.*.description",
+                    "data_type": "string",
+                    "column_name": "Description",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.response.assets.*.id",
                     "data_type": "string",
                     "example_values": [
-                        ""
+                        "893"
                     ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.assets.*.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "XX_REPO"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.createdTime",
+                    "data_type": "string",
+                    "example_values": [
+                        "1559161314"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.definingAssets.*.description",
+                    "data_type": "string",
+                    "example_values": [
+                        "All defining ranges of the Group in whose context this Asset is being evaluated."
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.definingAssets.*.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "0"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.definingAssets.*.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "All Defined Assets"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.description",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.response.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "64"
+                    ],
+                    "column_name": "Group ID",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.data.*.response.modifiedTime",
+                    "data_type": "string",
+                    "example_values": [
+                        "1559161525"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "XX"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.response.userCount",
+                    "data_type": "numeric",
+                    "example_values": [
+                        0
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.timestamp",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1559161525
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.type",
+                    "data_type": "string",
+                    "example_values": [
+                        "regular"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary",
+                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.message",
                     "data_type": "string",
                     "example_values": [
                         "Successfully updated group."
-                    ]
-                },
-                {
-                    "data_path": "action_result.parameter.update_fields",
-                    "data_type": "string",
-                    "example_values": [
-                        "{\"assets\": [{\"id\": \"893\"}]}"
-                    ]
-                },
-                {
-                    "data_path": "action_result.parameter.group_name",
-                    "data_type": "string",
-                    "example_values": [
-                        "XX"
                     ]
                 },
                 {

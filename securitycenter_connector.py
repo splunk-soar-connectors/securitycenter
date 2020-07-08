@@ -1,16 +1,8 @@
-# --
 # File: securitycenter_connector.py
+# Copyright (c) 2017-2020 Splunk Inc.
 #
-# Copyright (c) Phantom Cyber Corporation, 2017-2018
-#
-# This unpublished material is proprietary to Phantom Cyber.
-# All rights reserved. The methods and
-# techniques described herein are considered trade secrets
-# and/or confidential. Reproduction or distribution, in whole
-# or in part, is forbidden except by express written permission
-# of Phantom Cyber.
-#
-# --
+# SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
+# without a valid written license from Splunk Inc. is PROHIBITED.
 
 # Phantom App imports
 import phantom.app as phantom
@@ -41,6 +33,10 @@ class SecurityCenterConnector(BaseConnector):
         # Call the BaseConnectors init first
         super(SecurityCenterConnector, self).__init__()
         self._verify = None
+        self._good_token = None
+        self._rest_url = None
+        self._retry_count = None
+        self._retry_wait = None
 
     def _get_token(self):
 
@@ -61,7 +57,6 @@ class SecurityCenterConnector(BaseConnector):
 
             self.save_progress("Getting token for session...; try #{}".format(retry))
             r = None
-            error_msg = None
             try:
                 r = self._session.post(self._rest_url + "/rest/token", json=auth_data, verify=self._verify)
                 self.save_progress("Request Completed")
@@ -71,7 +66,7 @@ class SecurityCenterConnector(BaseConnector):
                 error_msg = "Error: connection error with server; {}".format(e)
                 self.save_progress(error_msg)
 
-            if r == None:
+            if r is None:
                 error_msg = "Error: no response from server"
                 self.save_progress(error_msg)
                 continue
@@ -79,13 +74,13 @@ class SecurityCenterConnector(BaseConnector):
             rjson = {}
             try:
                 rjson = r.json()
-                #print(json.dumps(rjson, indent=4))
+                # print(json.dumps(rjson, indent=4))
 
             except Exception as e:
-                #print("Exception: {}".format(e))
-                #print("status_code: {}".format(r.status_code))
-                #print("Text")
-                #print(r.text)
+                # print("Exception: {}".format(e))
+                # print("status_code: {}".format(r.status_code))
+                # print("Text")
+                # print(r.text)
                 pass
 
             if len(rjson) == 0:
@@ -94,7 +89,7 @@ class SecurityCenterConnector(BaseConnector):
                 continue
 
             if rjson.get('error_code'):
-                error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n',' ').strip())
+                error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n', ' ').strip())
                 self.save_progress(error_msg)
                 continue
 
@@ -104,15 +99,15 @@ class SecurityCenterConnector(BaseConnector):
                 error_msg = "Error: token is not numeric"
                 self.save_progress(error_msg)
                 continue
-                
+
             self._session.headers.update({'X-SecurityCenter': str(token)})
             self._good_token = True
             return self.set_status(phantom.APP_SUCCESS)
 
         if rjson.get('error_code'):
-            error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n',' ').strip())
+            error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n', ' ').strip())
             self.save_progress(error_msg)
-            
+
         self.save_progress("Error: Exceeded number of retries to get token; {}".format(error_msg))
         return self.set_status(phantom.APP_ERROR, "Error: Exceeded number of retries to get token; {}".format(error_msg))
 
@@ -174,8 +169,8 @@ class SecurityCenterConnector(BaseConnector):
         action_result.add_data(resp_json)
         message = r.text.replace('{', '{{').replace('}', '}}')
         return action_result.set_status(phantom.APP_ERROR,
-                                               "Error from server, Status Code: {0} data returned: {1}".format(
-                                                   r.status_code, message)), resp_json
+                                        "Error from server, Status Code: {0} data returned: {1}".format(
+                                            r.status_code, message)), resp_json
 
     def _process_response(self, r, action_result):
 
@@ -218,7 +213,6 @@ class SecurityCenterConnector(BaseConnector):
             # Set the action_result status to error, the handler function will most probably return as is
             return action_result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(str(e))), None
 
-        rjson = {}
         error_msg = None
         for retry in range(1, self._retry_count + 1):
 
@@ -229,7 +223,6 @@ class SecurityCenterConnector(BaseConnector):
 
             self.save_progress("Making REST call...; try #{}".format(retry))
             r = None
-            error_msg = None
             try:
                 r = request_func(url, params=params, json=json, verify=self._verify)
                 self.save_progress("Request Completed")
@@ -239,23 +232,20 @@ class SecurityCenterConnector(BaseConnector):
                 error_msg = "Error: connection error with server; {}".format(e)
                 self.save_progress(error_msg)
 
-            if r == None:
+            if r is None:
                 error_msg = "Error: no response from server"
                 self.save_progress(error_msg)
                 continue
 
             rjson = {}
             try:
-                # because json is a parameter
-                import json as jjson
                 rjson = r.json()
-                #print(jjson.dumps(rjson, indent=4))
 
             except Exception as e:
-                #print("Exception: {}".format(e))
-                #print("status_code: {}".format(r.status_code))
-                #print("Text")
-                #print(r.text)
+                # print("Exception: {}".format(e))
+                # print("status_code: {}".format(r.status_code))
+                # print("Text")
+                # print(r.text)
                 pass
 
             if len(rjson) == 0:
@@ -264,7 +254,7 @@ class SecurityCenterConnector(BaseConnector):
                 continue
 
             if rjson.get('error_code'):
-                error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n',' ').strip())
+                error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n', ' ').strip())
                 self.send_progress(error_msg)
                 continue
 
@@ -489,7 +479,7 @@ class SecurityCenterConnector(BaseConnector):
                 return action_result.set_status(phantom.APP_SUCCESS, 'Successfully updated group.')
 
         # Group does not exist
-        message = 'Group ({}) not found.'.format(group_name)
+        message = 'Group "{}" not found.'.format(group_name)
         return action_result.set_status(phantom.APP_ERROR, message)
 
     def handle_action(self, param):
