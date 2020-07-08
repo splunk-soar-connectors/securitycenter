@@ -1,7 +1,7 @@
 {
     "appid": "421c4b26-2254-41f0-8544-5619af2afa42",
     "name": "SecurityCenter",
-    "description": "This app integrates with <b>Tenable's SecurityCenter</b> to provide endpoint-based <b>investigative</b> actions.",
+    "description": "This app integrates with Tenable's SecurityCenter to provide endpoint-based investigative actions",
     "publisher": "Phantom",
     "package_name": "phantom_securitycenter",
     "type": "vulnerability scanner",
@@ -60,7 +60,7 @@
     "actions": [
         {
             "action": "test connectivity",
-            "description": "Validate the asset configuration for connectivity.",
+            "description": "Validate the asset configuration for connectivity",
             "type": "test",
             "identifier": "test_asset_connectivity",
             "read_only": true,
@@ -70,7 +70,7 @@
         },
         {
             "action": "scan endpoint",
-            "description": "Runs a scan against a specified IP or host.",
+            "description": "Runs a scan against a specified IP or host",
             "type": "investigate",
             "identifier": "scan_endpoint",
             "read_only": true,
@@ -426,6 +426,20 @@
                 {
                     "data_path": "action_result.message",
                     "data_type": "string"
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "versions": "EQ(*)"
