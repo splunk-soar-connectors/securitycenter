@@ -16,7 +16,9 @@ import datetime
 import json
 import time
 from bs4 import BeautifulSoup
+from bs4 import UnicodeDammit
 from securitycenter_consts import *
+import sys
 
 
 class SecurityCenterConnector(BaseConnector):
@@ -37,6 +39,54 @@ class SecurityCenterConnector(BaseConnector):
         self._rest_url = None
         self._retry_count = None
         self._retry_wait = None
+
+    def _handle_py_ver_compat_for_input_str(self, input_str, always_encode=False):
+        """
+        This method returns the encoded|original string based on the Python version.
+        :param input_str: Input string to be processed
+        :param always_encode: Used if the string needs to be encoded for python 3
+        :return: input_str (Processed input string based on following logic 'input_str - Python 3; encoded input_str - Python 2')
+        """
+
+        try:
+            if input_str and (self._python_version == 2 or always_encode):
+                input_str = UnicodeDammit(input_str).unicode_markup.encode('utf-8')
+        except:
+            self.debug_print("Error occurred while handling python 2to3 compatibility for the input string")
+
+        return input_str
+
+    def _get_error_message_from_exception(self, e):
+        """ This method is used to get appropriate error message from the exception.
+        :param e: Exception object
+        :return: error message
+        """
+        error_code = SECURITY_CENTER_ERR_CODE_UNAVAILABLE
+        error_msg = SECURITY_CENTER_ERR_MSG_UNAVAILABLE
+
+        try:
+            if e.args:
+                if len(e.args) > 1:
+                    error_code = e.args[0]
+                    error_msg = e.args[1]
+                elif len(e.args) == 1:
+                    error_code = SECURITY_CENTER_ERR_CODE_UNAVAILABLE
+                    error_msg = e.args[0]
+            else:
+                error_code = SECURITY_CENTER_ERR_CODE_UNAVAILABLE
+                error_msg = SECURITY_CENTER_ERR_MSG_UNAVAILABLE
+        except:
+            error_code = SECURITY_CENTER_ERR_CODE_UNAVAILABLE
+            error_msg = SECURITY_CENTER_ERR_MSG_UNAVAILABLE
+
+        try:
+            error_msg = self._handle_py_ver_compat_for_input_str(error_msg)
+        except TypeError:
+            error_msg = SECURITY_CENTER_UNICODE_DAMMIT_TYPE_ERROR_MESSAGE
+        except:
+            error_msg = SECURITY_CENTER_ERR_MSG_UNAVAILABLE
+
+        return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
 
     def _get_token(self):
 
@@ -63,7 +113,7 @@ class SecurityCenterConnector(BaseConnector):
 
             except Exception as e:
                 self.save_progress("Request Exception")
-                error_msg = "Error: connection error with server; {}".format(e)
+                error_msg = "Error: connection error with server; {}".format(self._get_error_message_from_exception(e))
                 self.save_progress(error_msg)
 
             if r is None:
@@ -77,7 +127,9 @@ class SecurityCenterConnector(BaseConnector):
                 # print(json.dumps(rjson, indent=4))
 
             except Exception as e:
-                # print("Exception: {}".format(e))
+                error_msg = self._get_error_message_from_exception(e)
+                self.debug_print("Exception: {}".format(error_msg))
+                # print("Exception: {}".format(error_msg))
                 # print("status_code: {}".format(r.status_code))
                 # print("Text")
                 # print(r.text)
@@ -116,8 +168,15 @@ class SecurityCenterConnector(BaseConnector):
         self._good_token = False
 
         config = self.get_config()
+
+        # Fetching the Python major version
+        try:
+            self._python_version = int(sys.version_info[0])
+        except:
+            return self.set_status(phantom.APP_ERROR, "Error occurred while fetching the Phantom server's Python major version")
+
         self._verify = config["verify_server_cert"]
-        self._rest_url = config["base_url"]
+        self._rest_url = config["base_url"].rstrip("/")
         self._retry_count = int(config['retry_count'])
         self._retry_wait = int(config['retry_wait'])
 
@@ -161,9 +220,10 @@ class SecurityCenterConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            return action_result.set_status(phantom.APP_ERROR, "Unable to parse response as JSON", e), None
+            error_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, "Unable to parse response as JSON", error_msg), None
 
-        if (200 <= r.status_code < 205):
+        if 200 <= r.status_code < 205:
             return phantom.APP_SUCCESS, resp_json
 
         action_result.add_data(resp_json)
@@ -176,7 +236,7 @@ class SecurityCenterConnector(BaseConnector):
 
         # store the r_text in debug data, it will get dumped in the logs if an error occurs
         if hasattr(action_result, 'add_debug_data'):
-            if (r is not None):
+            if r is not None:
                 action_result.add_debug_data({'r_text': r.text})
                 action_result.add_debug_data({'r_headers': r.headers})
                 action_result.add_debug_data({'r_status_code': r.status_code})
@@ -184,10 +244,10 @@ class SecurityCenterConnector(BaseConnector):
                 action_result.add_debug_data({'r_text': 'r is None'})
 
         # There are just too many differences in the response to handle all of them in the same function
-        if ('json' in r.headers.get('Content-Type', '')):
+        if 'json' in r.headers.get('Content-Type', ''):
             return self._process_json_response(r, action_result)
 
-        if ('html' in r.headers.get('Content-Type', '')):
+        if 'html' in r.headers.get('Content-Type', ''):
             return self._process_html_response(r, action_result)
 
         # it's not an html or json, handle if it is a successful empty response
@@ -211,7 +271,8 @@ class SecurityCenterConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "Unsupported method: {0}".format(method)), None
         except Exception as e:
             # Set the action_result status to error, the handler function will most probably return as is
-            return action_result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(str(e))), None
+            error_msg = self._get_error_message_from_exception(e)
+            return action_result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(error_msg)), None
 
         error_msg = None
         for retry in range(1, self._retry_count + 1):
@@ -229,7 +290,7 @@ class SecurityCenterConnector(BaseConnector):
 
             except Exception as e:
                 self.save_progress("Request Exception")
-                error_msg = "Error: connection error with server; {}".format(e)
+                error_msg = "Error: connection error with server; {}".format(self._get_error_message_from_exception(e))
                 self.save_progress(error_msg)
 
             if r is None:
@@ -242,7 +303,9 @@ class SecurityCenterConnector(BaseConnector):
                 rjson = r.json()
 
             except Exception as e:
-                # print("Exception: {}".format(e))
+                error_msg = self._get_error_message_from_exception(e)
+                self.debug_print("Exception: {}".format(error_msg))
+                # print("Exception: {}".format(error_msg))
                 # print("status_code: {}".format(r.status_code))
                 # print("Text")
                 # print(r.text)
@@ -273,16 +336,6 @@ class SecurityCenterConnector(BaseConnector):
 
         return clean_json
 
-    def load_dirty_json(self, dirty_json):
-        import re
-        regex_replace = [(r"([ \{,:\[])(u)?'([^']+)'", r'\1"\3"'), (r" False([, \}\]])", r' false\1'),
-                         (r" True([, \}\]])", r' true\1')]
-        for r, s in regex_replace:
-            dirty_json = re.sub(r, s, dirty_json)
-        clean_json = json.loads(dirty_json)
-
-        return clean_json
-
     def _test_connectivity(self):
 
         self.save_progress("Checking connectivity to your SecurityCenter instance...")
@@ -298,16 +351,19 @@ class SecurityCenterConnector(BaseConnector):
         action_result = ActionResult(dict(param))
         self.add_action_result(action_result)
         # target to scan
-        ip_hostname = param[IP_HOSTNAME]
+        ip_hostname = self._handle_py_ver_compat_for_input_str(param[IP_HOSTNAME])
 
         # Clean up ip hostname
         ip_hostname = [x.strip() for x in ip_hostname.split(',')]
         ip_hostname = ','.join(ip_hostname)
         ip_hostname = ip_hostname.replace("https://", "")
         ip_hostname = ip_hostname.replace("http://", "")
-        if (not ph_utils.is_hostname(ip_hostname)):
-            if (not ph_utils.is_ip(ip_hostname)):
+
+        try:
+            if not ph_utils.is_hostname(ip_hostname) and not ph_utils.is_ip(ip_hostname):
                 return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
+        except:
+            return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
 
         scan_policy_id = param[SCAN_POLICY]
         if len(str(scan_policy_id)) > 10:
@@ -324,7 +380,7 @@ class SecurityCenterConnector(BaseConnector):
 
         ret_val, resp_json = self._make_rest_call('/scan', action_result, json=scan_data, method='post')
 
-        if (phantom.is_fail(ret_val)):
+        if phantom.is_fail(ret_val):
             return action_result.get_status()
 
         action_result.add_data(resp_json["response"])
@@ -335,8 +391,8 @@ class SecurityCenterConnector(BaseConnector):
     def _list_vulnerabilities(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        list_vuln_host = param[IP_HOSTNAME].strip()
-        if (not ph_utils.is_ip(list_vuln_host)):
+        list_vuln_host = self._handle_py_ver_compat_for_input_str(param[IP_HOSTNAME]).strip()
+        if not ph_utils.is_ip(list_vuln_host):
             if len(list_vuln_host) > 255 or set(' !"\'@#$%^&*(){};[]|').intersection(list_vuln_host):
                 return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities.")
 
@@ -385,7 +441,7 @@ class SecurityCenterConnector(BaseConnector):
 
         ret_val, resp_json = self._make_rest_call("/analysis", action_result, json=query_string, method="post")
 
-        if (phantom.is_fail(ret_val)):
+        if phantom.is_fail(ret_val):
             return action_result.get_status()
 
         action_result.add_data(resp_json["response"])
@@ -411,7 +467,7 @@ class SecurityCenterConnector(BaseConnector):
     def _list_policies(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
         ret_val, resp_json = self._make_rest_call("/policy", action_result)
-        if (phantom.is_fail(ret_val)):
+        if phantom.is_fail(ret_val):
             return action_result.get_status()
         action_result.add_data(resp_json["response"])
 
@@ -423,8 +479,8 @@ class SecurityCenterConnector(BaseConnector):
         """
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        asset_name = param['asset_name']
-        update_fields = self.load_dirty_json(param['update_fields'])
+        asset_name = self._handle_py_ver_compat_for_input_str(param['asset_name'])
+        update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param['update_fields']))
 
         endpoint = '/asset'
 
@@ -466,8 +522,8 @@ class SecurityCenterConnector(BaseConnector):
         """
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        group_name = param['group_name']
-        update_fields = self.load_dirty_json(param['update_fields'])
+        group_name = self._handle_py_ver_compat_for_input_str(param['group_name'])
+        update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param['update_fields']))
 
         endpoint = '/group'
 
@@ -494,24 +550,24 @@ class SecurityCenterConnector(BaseConnector):
 
     def handle_action(self, param):
 
-        ret_val = phantom.APP_SUCCESS
+        ret_val = None
 
         # Get the action that we are supposed to execute for this App Run
         action_id = self.get_action_identifier()
 
-        self.debug_print("action_id", self.get_action_identifier())
+        self.debug_print("action_id", action_id)
 
-        if (action_id == self.ACTION_ID_GET_IP_VULNERABILITIES):
+        if action_id == self.ACTION_ID_GET_IP_VULNERABILITIES:
             ret_val = self._list_vulnerabilities(param)
-        elif (action_id == self.ACTION_ID_SCAN_ENDPOINT):
+        elif action_id == self.ACTION_ID_SCAN_ENDPOINT:
             ret_val = self._scan_endpoint(param)
-        elif (action_id == self.ACTION_ID_LIST_SCAN_POLICIES):
+        elif action_id == self.ACTION_ID_LIST_SCAN_POLICIES:
             ret_val = self._list_policies(param)
-        elif (action_id == self.ACTION_ID_UPDATE_ASSET):
+        elif action_id == self.ACTION_ID_UPDATE_ASSET:
             ret_val = self._update_asset(param)
-        elif (action_id == self.ACTION_ID_UPDATE_GROUP):
+        elif action_id == self.ACTION_ID_UPDATE_GROUP:
             ret_val = self._update_group(param)
-        elif (action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY):
+        elif action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity()
 
         return ret_val
@@ -519,14 +575,13 @@ class SecurityCenterConnector(BaseConnector):
 
 if __name__ == '__main__':
 
-    import sys
     import pudb
 
     # Breakpoint at runtime
     pudb.set_trace()
 
-    if (len(sys.argv) < 2):
-        print "No test json specified as input"
+    if len(sys.argv) < 2:
+        print("No test json specified as input")
         exit(0)
 
     with open(sys.argv[1]) as f:
@@ -536,6 +591,6 @@ if __name__ == '__main__':
         connector = SecurityCenterConnector()
         connector.print_progress_message = True
         ret_val = connector._handle_action(json.dumps(in_json), None)
-        print (json.dumps(json.loads(ret_val), indent=4))
+        print(json.dumps(json.loads(ret_val), indent=4))
 
     exit(0)
