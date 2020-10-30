@@ -1,4 +1,4 @@
-# File: securitycenter_connector.py
+# File: tenablesc_connector.py
 # Copyright (c) 2017-2020 Splunk Inc.
 #
 # SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
@@ -17,7 +17,7 @@ import json
 import time
 from bs4 import BeautifulSoup
 from bs4 import UnicodeDammit
-from securitycenter_consts import *
+from tenablesc_consts import *
 import sys
 
 
@@ -61,8 +61,8 @@ class SecurityCenterConnector(BaseConnector):
         :param e: Exception object
         :return: error message
         """
-        error_code = SECURITY_CENTER_ERR_CODE_UNAVAILABLE
-        error_msg = SECURITY_CENTER_ERR_MSG_UNAVAILABLE
+        error_code = TENABLE_ERR_CODE_UNAVAILABLE
+        error_msg = TENABLE_ERR_MSG_UNAVAILABLE
 
         try:
             if e.args:
@@ -70,21 +70,21 @@ class SecurityCenterConnector(BaseConnector):
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = SECURITY_CENTER_ERR_CODE_UNAVAILABLE
+                    error_code = TENABLE_ERR_CODE_UNAVAILABLE
                     error_msg = e.args[0]
             else:
-                error_code = SECURITY_CENTER_ERR_CODE_UNAVAILABLE
-                error_msg = SECURITY_CENTER_ERR_MSG_UNAVAILABLE
+                error_code = TENABLE_ERR_CODE_UNAVAILABLE
+                error_msg = TENABLE_ERR_MSG_UNAVAILABLE
         except:
-            error_code = SECURITY_CENTER_ERR_CODE_UNAVAILABLE
-            error_msg = SECURITY_CENTER_ERR_MSG_UNAVAILABLE
+            error_code = TENABLE_ERR_CODE_UNAVAILABLE
+            error_msg = TENABLE_ERR_MSG_UNAVAILABLE
 
         try:
             error_msg = self._handle_py_ver_compat_for_input_str(error_msg)
         except TypeError:
-            error_msg = SECURITY_CENTER_UNICODE_DAMMIT_TYPE_ERROR_MESSAGE
+            error_msg = TENABLE_UNICODE_DAMMIT_TYPE_ERROR_MESSAGE
         except:
-            error_msg = SECURITY_CENTER_ERR_MSG_UNAVAILABLE
+            error_msg = TENABLE_ERR_MSG_UNAVAILABLE
 
         return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
 
@@ -480,7 +480,12 @@ class SecurityCenterConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         asset_name = self._handle_py_ver_compat_for_input_str(param['asset_name'])
-        update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param['update_fields']))
+        try:
+            update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param['update_fields']))
+            if type(update_fields) != dict:
+                return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
+        except:
+            return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
 
         endpoint = '/asset'
 
@@ -505,8 +510,8 @@ class SecurityCenterConnector(BaseConnector):
         # Asset doesn't exist, creating new one with provided name.
         if 'type' not in update_fields:
             update_fields['type'] = 'static'
-
-        update_fields['name'] = asset_name
+        if 'name' not in update_fields:
+            update_fields['name'] = asset_name
 
         ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="post")
         if phantom.is_fail(ret_val):
@@ -523,7 +528,12 @@ class SecurityCenterConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         group_name = self._handle_py_ver_compat_for_input_str(param['group_name'])
-        update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param['update_fields']))
+        try:
+            update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param['update_fields']))
+            if type(update_fields) != dict:
+                return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
+        except:
+            return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
 
         endpoint = '/group'
 

@@ -1,24 +1,24 @@
 {
     "appid": "421c4b26-2254-41f0-8544-5619af2afa42",
-    "name": "SecurityCenter",
+    "name": "Tenable.sc",
     "description": "This app integrates with Tenable's SecurityCenter to provide endpoint-based investigative actions",
-    "publisher": "Phantom",
-    "package_name": "phantom_securitycenter",
+    "publisher": "Splunk",
+    "package_name": "phantom_tenablesc",
     "type": "vulnerability scanner",
     "license": "Copyright (c) 2017-2020 Splunk Inc.",
-    "main_module": "securitycenter_connector.pyc",
-    "app_version": "1.3.16",
-    "utctime_updated": "2019-01-24T21:56:12.000000Z",
+    "main_module": "tenablesc_connector.pyc",
+    "app_version": "2.0.0",
+    "utctime_updated": "2020-07-08T16:16:15.105817Z",
     "product_vendor": "Tenable",
-    "product_name": "SecurityCenter",
+    "product_name": "Tenable.sc",
     "product_version_regex": ".*",
     "min_phantom_version": "4.8.24304",
     "python_version": "3",
-    "logo": "logo_securitycenter.svg",
-    "logo_dark": "logo_securitycenter_dark.svg",
+    "logo": "logo_tenablesc.svg",
+    "logo_dark": "logo_tenablesc_dark.svg",
     "configuration": {
         "base_url": {
-            "description": "SecurityCenter instance URL (https://sc_instance.company.com)",
+            "description": "Tenable.sc instance URL (https://sc_instance.company.com)",
             "data_type": "string",
             "required": true,
             "order": 0
@@ -76,14 +76,17 @@
                 "ip_hostname": {
                     "description": "IP/Hostname to scan (commas separated)",
                     "data_type": "string",
+                    "contains": [
+                        "tenablesc ip hostname"
+                    ],
                     "primary": true,
                     "required": true
                 },
                 "scan_policy_id": {
-                    "description": "SecurityCenter Scan Policy ID to use",
+                    "description": "Tenable.sc Scan Policy ID to use",
                     "data_type": "numeric",
                     "contains": [
-                        "securitycenter scan policy id"
+                        "tenablesc scan policy id"
                     ],
                     "required": true,
                     "primary": true
@@ -106,13 +109,16 @@
                 },
                 {
                     "data_path": "action_result.parameter.ip_hostname",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "contains": [
+                        "tenablesc ip hostname"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.scan_policy_id",
                     "data_type": "numeric",
                     "contains": [
-                        "securitycenter scan policy id"
+                        "tenablesc scan policy id"
                     ]
                 },
                 {
@@ -187,7 +193,7 @@
                     "data_path": "action_result.data.*.id",
                     "data_type": "string",
                     "contains": [
-                        "securitycenter scan id"
+                        "tenablesc scan id"
                     ],
                     "column_name": "Scan ID",
                     "column_order": 6
@@ -268,7 +274,7 @@
                     "data_path": "action_result.data.*.policy.id",
                     "data_type": "numeric",
                     "contains": [
-                        "securitycenter scan policy id"
+                        "tenablesc scan policy id"
                     ],
                     "column_name": "Scan Policy ID",
                     "column_order": 3
@@ -323,7 +329,7 @@
                     "data_path": "action_result.data.*.scanResultID",
                     "data_type": "string",
                     "contains": [
-                        "securitycenter scan result id"
+                        "tenablesc scan result id"
                     ],
                     "column_name": "Scan Result ID",
                     "column_order": 0
@@ -437,7 +443,7 @@
         },
         {
             "action": "list vulnerabilities",
-            "description": "Query SecurityCenter for a list of Vulnerabilities associated with an IP or host name",
+            "description": "Query Tenable.sc for a list of Vulnerabilities associated with an IP or host name",
             "type": "investigate",
             "identifier": "list_vulnerabilities",
             "read_only": true,
@@ -595,14 +601,14 @@
         },
         {
             "action": "list policies",
-            "description": "Lists the scan policies available in Tenable SecurityCenter",
+            "description": "Lists the scan policies available in Tenable.sc",
             "type": "investigate",
             "identifier": "list_policies",
             "read_only": true,
             "parameters": {},
             "render": {
                 "width": 12,
-                "title": "SecurityCenter Policies",
+                "title": "Tenable.sc Policies",
                 "type": "table",
                 "height": 5
             },
@@ -619,7 +625,7 @@
                     "data_path": "action_result.data.*.manageable.*.id",
                     "data_type": "numeric",
                     "contains": [
-                        "securitycenter scan policy id"
+                        "tenablesc scan policy id"
                     ]
                 },
                 {
@@ -630,7 +636,7 @@
                     "data_path": "action_result.data.*.usable.*.id",
                     "data_type": "numeric",
                     "contains": [
-                        "securitycenter scan policy id"
+                        "tenablesc scan policy id"
                     ],
                     "column_name": "Usable Scan Policy ID",
                     "column_order": 0
@@ -669,7 +675,7 @@
         {
             "action": "update asset",
             "description": "Update existing asset with provided fields or create a new one as a 'static' type",
-            "verbose": "View SecurityCenter API docs for available fields to update.",
+            "verbose": "View Tenable.sc API docs for available fields to update.",
             "type": "generic",
             "identifier": "update_asset",
             "read_only": false,
@@ -996,7 +1002,7 @@
         {
             "action": "update group",
             "description": "Update existing group with provided fields",
-            "verbose": "View SecurityCenter API docs for available fields to update.",
+            "verbose": "View Tenable.sc API docs for available fields to update.",
             "type": "generic",
             "identifier": "update_group",
             "read_only": false,
@@ -1057,9 +1063,7 @@
                 },
                 {
                     "data_path": "action_result.data.*.response.assets.*.description",
-                    "data_type": "string",
-                    "column_name": "Description",
-                    "column_order": 1
+                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.data.*.response.assets.*.id",
@@ -1105,7 +1109,9 @@
                 },
                 {
                     "data_path": "action_result.data.*.response.description",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "column_name": "Description",
+                    "column_order": 1
                 },
                 {
                     "data_path": "action_result.data.*.response.id",
