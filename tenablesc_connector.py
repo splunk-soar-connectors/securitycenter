@@ -88,6 +88,23 @@ class SecurityCenterConnector(BaseConnector):
 
         return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
 
+    def _validate_integer(self, action_result, parameter, key, allow_zero=False):
+        if parameter is not None:
+            try:
+                if not float(parameter).is_integer():
+                    return action_result.set_status(phantom.APP_ERROR, 'Please provide a valid integer value in the "{}"'.format(key)), None
+
+                parameter = int(parameter)
+            except:
+                return action_result.set_status(phantom.APP_ERROR, 'Please provide a valid integer value in the "{}"'.format(key)), None
+
+            if parameter < 0:
+                return action_result.set_status(phantom.APP_ERROR, 'Please provide a valid non-negative integer value in the "{}"'.format(key)), None
+            if not allow_zero and parameter == 0:
+                return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_PARAM.format(param=key)), None
+
+        return phantom.APP_SUCCESS, parameter
+
     def _get_token(self):
 
         config = self.get_config()
@@ -177,8 +194,14 @@ class SecurityCenterConnector(BaseConnector):
 
         self._verify = config["verify_server_cert"]
         self._rest_url = config["base_url"].rstrip("/")
-        self._retry_count = int(config['retry_count'])
-        self._retry_wait = int(config['retry_wait'])
+
+        ret_val, self._retry_count = self._validate_integer(self, config.get('retry_count', 5), "Maximum attempts")
+        if phantom.is_fail(ret_val):
+            return self.get_status()
+
+        ret_val, self._retry_wait = self._validate_integer(self, config.get('retry_wait', 30), "Delay")
+        if phantom.is_fail(ret_val):
+            return self.get_status()
 
         status = self._get_token()
         if phantom.is_fail(status):
@@ -190,7 +213,9 @@ class SecurityCenterConnector(BaseConnector):
     def finalize(self):
 
         # Logout
-        ret_val, resp = self._make_rest_call('/token', self, method='delete')
+        ret_val = phantom.APP_SUCCESS
+        if self._good_token:
+            ret_val, resp = self._make_rest_call('/token', self, method='delete')
         return ret_val
 
     def _process_html_response(self, response, action_result):
@@ -338,13 +363,13 @@ class SecurityCenterConnector(BaseConnector):
 
     def _test_connectivity(self):
 
-        self.save_progress("Checking connectivity to your SecurityCenter instance...")
+        self.save_progress("Checking connectivity to your Tenable.sc instance...")
         ret_val, resp_json = self._make_rest_call('/user', self)
         if phantom.is_fail(ret_val):
             self.append_to_message('Test connectivity failed')
             return self.get_status()
         else:
-            return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to SecurityCenter was successful.")
+            return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to Tenable.sc was successful.")
 
     def _scan_endpoint(self, param):
 

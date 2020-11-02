@@ -8,6 +8,9 @@
     "license": "Copyright (c) 2017-2020 Splunk Inc.",
     "main_module": "tenablesc_connector.pyc",
     "app_version": "2.0.0",
+    "latest_tested_versions": [
+        "On-premise v5.15.0"
+    ],
     "utctime_updated": "2020-07-08T16:16:15.105817Z",
     "product_vendor": "Tenable",
     "product_name": "Tenable.sc",
