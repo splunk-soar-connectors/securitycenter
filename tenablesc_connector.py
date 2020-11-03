@@ -171,7 +171,7 @@ class SecurityCenterConnector(BaseConnector):
 
             self._session.headers.update({'X-SecurityCenter': str(token)})
             self._good_token = True
-            return self.set_status(phantom.APP_SUCCESS)
+            return phantom.APP_SUCCESS
 
         if rjson.get('error_code'):
             error_msg = "Error: error code {}: {}".format(rjson.get('error_code'), rjson.get('error_msg').replace('\n', ' ').strip())
@@ -373,8 +373,8 @@ class SecurityCenterConnector(BaseConnector):
 
     def _scan_endpoint(self, param):
 
-        action_result = ActionResult(dict(param))
-        self.add_action_result(action_result)
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
         # target to scan
         ip_hostname = self._handle_py_ver_compat_for_input_str(param[IP_HOSTNAME])
 
@@ -392,7 +392,7 @@ class SecurityCenterConnector(BaseConnector):
 
         ret_val, scan_policy_id = self._validate_integer(action_result, param[SCAN_POLICY], "Scan policy ID")
         if phantom.is_fail(ret_val):
-            return self.get_status()
+            return action_result.get_status()
 
         if len(str(scan_policy_id)) > 10:
             return action_result.set_status(phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs.")
