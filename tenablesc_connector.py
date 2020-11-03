@@ -1,5 +1,5 @@
 # File: tenablesc_connector.py
-# Copyright (c) 2017-2020 Splunk Inc.
+# Copyright (c) 2020 Splunk Inc.
 #
 # SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
 # without a valid written license from Splunk Inc. is PROHIBITED.
@@ -390,7 +390,10 @@ class SecurityCenterConnector(BaseConnector):
         except:
             return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
 
-        scan_policy_id = param[SCAN_POLICY]
+        ret_val, scan_policy_id = self._validate_integer(action_result, param[SCAN_POLICY], "Scan policy ID")
+        if phantom.is_fail(ret_val):
+            return self.get_status()
+
         if len(str(scan_policy_id)) > 10:
             return action_result.set_status(phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs.")
 
