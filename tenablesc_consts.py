@@ -8,6 +8,7 @@ IP_HOSTNAME = "ip_hostname"
 SCAN_POLICY = "scan_policy_id"
 DATETIME_FORMAT = "TZID=UTC:%Y%m%dT%H%M%S"
 SCAN_DELAY = 3
+PAGE_SIZE = 100
 
 TENABLE_ERR_CODE_UNAVAILABLE = "Error code unavailable"
 TENABLE_ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters."

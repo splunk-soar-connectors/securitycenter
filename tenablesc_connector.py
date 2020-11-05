@@ -455,7 +455,7 @@ class SecurityCenterConnector(BaseConnector):
                         "tool": "sumid",
                         "sourceType": "cumulative",
                         "startOffset": 0,
-                        "endOffset": 50,
+                        "endOffset": PAGE_SIZE,
                         "filters": filters,
                         "sortColumn": "severity",
                         "sortDirection": "desc",
@@ -467,16 +467,32 @@ class SecurityCenterConnector(BaseConnector):
                       "type": "vuln"
                     }
 
-        ret_val, resp_json = self._make_rest_call("/analysis", action_result, json=query_string, method="post")
+        final_data = {}
+        while True:
+            ret_val, resp_json = self._make_rest_call("/analysis", action_result, json=query_string, method="post")
 
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
-        action_result.add_data(resp_json["response"])
-        action_result.set_summary({'total_vulnerabilities': resp_json["response"]["totalRecords"]})
+            if final_data:
+                final_data["results"].extend(resp_json.get("response", {}).get("results", []))
+            else:
+                final_data = resp_json.get("response", {})
+
+            if PAGE_SIZE > len(resp_json.get("response", {}).get("results", [])):
+                break
+
+            query_string["query"]["startOffset"] += PAGE_SIZE
+            query_string["query"]["endOffset"] += PAGE_SIZE
+
+        final_data["returnedRecords"] = len(final_data.get("results", []))
+        final_data["endOffset"] = query_string["query"]["endOffset"]
+
+        action_result.add_data(final_data)
+        action_result.set_summary({'total_vulnerabilities': len(final_data.get("results", []))})
 
         crit_vulns = high_vulns = med_vulns = low_vulns = info_vulns = 0
-        for vuln in resp_json["response"]["results"]:
+        for vuln in final_data.get("results", []):
             if vuln["severity"]["id"] == '4':
                 crit_vulns += 1
             elif vuln["severity"]["id"] == '3':

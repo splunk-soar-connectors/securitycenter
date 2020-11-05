@@ -448,6 +448,7 @@
             "action": "list vulnerabilities",
             "description": "Query Tenable.sc for a list of Vulnerabilities associated with an IP or host name",
             "type": "investigate",
+            "verbose": "If the input IP / host name is not available in the server, Action will pass with 0 vulnerability.",
             "identifier": "list_vulnerabilities",
             "read_only": true,
             "parameters": {
@@ -543,7 +544,9 @@
                 },
                 {
                     "data_path": "action_result.data.*.results.*.total",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "column_name": "Count",
+                    "column_order": 4
                 },
                 {
                     "data_path": "action_result.data.*.returnedRecords",
