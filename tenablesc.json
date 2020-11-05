@@ -6,7 +6,7 @@
     "package_name": "phantom_tenablesc",
     "type": "vulnerability scanner",
     "license": "Copyright (c) 2020 Splunk Inc.",
-    "main_module": "tenablesc_connector.pyc",
+    "main_module": "tenablesc_connector.py",
     "app_version": "2.0.0",
     "latest_tested_versions": [
         "On-premise v5.15.0"
