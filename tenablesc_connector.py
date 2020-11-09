@@ -510,12 +510,16 @@ class SecurityCenterConnector(BaseConnector):
 
     def _list_policies(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
+
         ret_val, resp_json = self._make_rest_call("/policy", action_result)
         if phantom.is_fail(ret_val):
             return action_result.get_status()
-        action_result.add_data(resp_json["response"])
 
-        return action_result.set_status(phantom.APP_SUCCESS)
+        action_result.add_data(resp_json["response"])
+        action_result.set_summary({'policy_count': len(resp_json["response"].get("usable", []))})
+        message = "Total policies: {}".format(len(resp_json["response"].get("usable", [])))
+
+        return action_result.set_status(phantom.APP_SUCCESS, message)
 
     def _update_asset(self, param):
         """
