@@ -764,6 +764,10 @@
                     "data_type": "string"
                 },
                 {
+                    "data_path": "action_result.summary.policy_count",
+                    "data_type": "numeric"
+                },
+                {
                     "data_path": "action_result.message",
                     "data_type": "string",
                     "example_values": [
