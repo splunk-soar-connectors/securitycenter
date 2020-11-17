@@ -66,7 +66,8 @@ class SecurityCenterConnector(BaseConnector):
         try:
             if e.args:
                 if len(e.args) > 1:
-                    error_code = e.args[0]
+                    if e.args[0].isdigit():
+                        error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
                     error_code = TENABLE_ERR_CODE_UNAVAILABLE
