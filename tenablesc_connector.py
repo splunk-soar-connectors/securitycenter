@@ -15,9 +15,9 @@ import requests
 import datetime
 import json
 import time
+import sys
 from bs4 import BeautifulSoup, UnicodeDammit
 from tenablesc_consts import *
-import sys
 
 
 class SecurityCenterConnector(BaseConnector):
@@ -127,6 +127,12 @@ class SecurityCenterConnector(BaseConnector):
                 r = self._session.post("{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify)
                 self.save_progress("Request Completed")
 
+            except requests.exceptions.InvalidSchema:
+                error_msg = "Error Connecting to server. No Connection adapter were found for %s" % (self._rest_url)
+                return self.set_status(phantom.APP_ERROR, error_msg)
+            except requests.exceptions.InvalidURL:
+                error_msg = "Error connecting to server. Invalid url %s" % (self._rest_url)
+                return self.set_status(phantom.APP_ERROR, error_msg)
             except Exception as e:
                 self.save_progress("Request Exception")
                 error_msg = "Error: connection error with server; {}".format(self._get_error_message_from_exception(e))
@@ -202,7 +208,6 @@ class SecurityCenterConnector(BaseConnector):
 
         status = self._get_token()
         if phantom.is_fail(status):
-            self.save_progress("Returning error in initialize")
             self.save_progress(self.get_status_message())
             return self.set_status(phantom.APP_ERROR, "Returning error in initialize")
 
@@ -311,6 +316,12 @@ class SecurityCenterConnector(BaseConnector):
                 r = request_func(url, params=params, json=json, verify=self._verify)
                 self.save_progress("Request Completed")
 
+            except requests.exceptions.InvalidSchema:
+                error_msg = "Error Connecting to server. No Connection adapter were found for %s" % (url)
+                return action_result.set_status(phantom.APP_ERROR, error_msg)
+            except requests.exceptions.InvalidURL:
+                error_msg = "Error connecting to server. Invalid url %s" % (url)
+                return action_result.set_status(phantom.APP_ERROR, error_msg)
             except Exception as e:
                 self.save_progress("Request Exception")
                 error_msg = "Error: connection error with server; {}".format(self._get_error_message_from_exception(e))
