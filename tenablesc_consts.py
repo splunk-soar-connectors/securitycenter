@@ -14,4 +14,4 @@ TENABLE_ERR_CODE_UNAVAILABLE = "Error code unavailable"
 TENABLE_ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters."
 TENABLE_UNICODE_DAMMIT_TYPE_ERROR_MESSAGE = "Error occurred while connecting to the Tenable.sc server. Please check the asset configuration and|or the action parameters."
 TENABLE_ERR_INVALID_JSON = 'Error: Invalid JSON format in the "{param}".'
-TENABLE_ERR_INVALID_PARAM = 'Please provide non-zero positive integer in "{param}".'
+TENABLE_ERR_INVALID_INT = 'Please provide a valid {msg} integer value in the "{param}"'
