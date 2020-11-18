@@ -66,8 +66,7 @@ class SecurityCenterConnector(BaseConnector):
         try:
             if e.args:
                 if len(e.args) > 1:
-                    if e.args[0].isdigit():
-                        error_code = e.args[0]
+                    error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
                     error_code = TENABLE_ERR_CODE_UNAVAILABLE
@@ -181,7 +180,6 @@ class SecurityCenterConnector(BaseConnector):
                 self._handle_py_ver_compat_for_input_str(rjson.get('error_msg').replace('\n', ' ').strip()))
             self.save_progress(error_msg)
 
-        self.save_progress("Error: Exceeded number of retries to get token; {}".format(error_msg))
         return self.set_status(phantom.APP_ERROR, "Error: Exceeded number of retries to get token; {}".format(error_msg))
 
     def initialize(self):
