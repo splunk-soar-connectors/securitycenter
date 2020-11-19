@@ -81,7 +81,7 @@ class SecurityCenterConnector(BaseConnector):
         try:
             error_msg = self._handle_py_ver_compat_for_input_str(error_msg)
         except TypeError:
-            error_msg = TENABLE_UNICODE_DAMMIT_TYPE_ERROR_MESSAGE
+            error_msg = TENABLE_UNICODE_DAMMIT_TYPE_ERR_MESSAGE
         except:
             error_msg = TENABLE_ERR_MSG_UNAVAILABLE
 
