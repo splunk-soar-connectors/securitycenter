@@ -4,7 +4,7 @@
     "description": "This app integrates with Tenable's SecurityCenter to provide endpoint-based investigative actions",
     "publisher": "Splunk",
     "package_name": "phantom_tenablesc",
-    "type": "vulnerability scanner",
+    "type": "network security",
     "license": "Copyright (c) 2020 Splunk Inc.",
     "main_module": "tenablesc_connector.py",
     "app_version": "2.0.0",
