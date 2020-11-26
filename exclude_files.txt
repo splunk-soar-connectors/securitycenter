@@ -6,5 +6,4 @@ Makefile
 .git*
 .DS_Store
 .gitlab-ci.yml
-*.py
 whitesource-results
