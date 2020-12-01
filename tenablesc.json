@@ -7,11 +7,11 @@
     "type": "network security",
     "license": "Copyright (c) 2020 Splunk Inc.",
     "main_module": "tenablesc_connector.py",
-    "app_version": "2.0.1",
+    "app_version": "2.0.2",
     "latest_tested_versions": [
         "On-premise v5.15.0"
     ],
-    "utctime_updated": "2020-11-26T06:09:08.000000Z",
+    "utctime_updated": "2020-12-01T07:31:13.000000Z",
     "product_vendor": "Tenable",
     "product_name": "Tenable.sc",
     "product_version_regex": ".*",
