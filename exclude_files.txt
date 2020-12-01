@@ -5,4 +5,5 @@ Makefile
 .pyproject
 .git*
 .DS_Store
-*.py
+.gitlab-ci.yml
+whitesource-results
