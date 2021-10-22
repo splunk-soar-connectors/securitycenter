@@ -1,5 +1,5 @@
 # File: tenablesc_connector.py
-# Copyright (c) 2020 Splunk Inc.
+# Copyright (c) 2017-2021 Splunk Inc.
 #
 # SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
 # without a valid written license from Splunk Inc. is PROHIBITED.
@@ -425,47 +425,64 @@ class SecurityCenterConnector(BaseConnector):
     def _list_vulnerabilities(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        list_vuln_host = self._handle_py_ver_compat_for_input_str(param[IP_HOSTNAME]).strip()
-        if not ph_utils.is_ip(list_vuln_host):
+        list_vuln_host = self._handle_py_ver_compat_for_input_str(param.get(IP_HOSTNAME))
+        if list_vuln_host and not ph_utils.is_ip(list_vuln_host):
             if len(list_vuln_host) > 255 or set(' !"\'@#$%^&*(){};[]|').intersection(list_vuln_host):
-                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities.")
+                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities")
 
-        if phantom.is_ip(list_vuln_host) is True:
-            filters = [{
-                            "id": "ip",
-                            "filterName": "ip",
-                            "operator": "=",
-                            "type": "vuln",
-                            "isPredefined": True,
-                            "value": str(list_vuln_host)
-                          }]
-        else:
-            filters = [{
-                            "id": "dns",
-                            "filterName": "dnsName",
-                            "operator": "=",
-                            "type": "vuln",
-                            "isPredefined": True,
-                            "value": str(list_vuln_host)
-                          }]
+        cve_id = self._handle_py_ver_compat_for_input_str(param.get('cve_id'))
+
+        if not cve_id and not list_vuln_host:
+            return action_result.set_status(phantom.APP_ERROR, "Please provide either IP address/Hostname or CVE ID")
+
+        filters = list()
+        if list_vuln_host:
+            if phantom.is_ip(list_vuln_host) is True:
+                filters.append({
+                                "id": "ip",
+                                "filterName": "ip",
+                                "operator": "=",
+                                "type": "vuln",
+                                "isPredefined": True,
+                                "value": str(list_vuln_host).strip()
+                })
+            else:
+                filters.append({
+                                "id": "dns",
+                                "filterName": "dnsName",
+                                "operator": "=",
+                                "type": "vuln",
+                                "isPredefined": True,
+                                "value": str(list_vuln_host).strip()
+                })
+        if cve_id:
+            filters.append({
+                "id": "cveID",
+                "filterName": "cveID",
+                "operator": "=",
+                "type": "vuln",
+                "isPredefined": True,
+                "value": str(cve_id).strip()
+            })
+
         query_string = {
                       "query": {
-                        "name": "",
-                        "description": "",
-                        "context": "",
-                        "status": -1,
-                        "createdTime": 0,
-                        "modifiedTime": 0,
-                        "groups": [],
-                        "type": "vuln",
-                        "tool": "sumid",
-                        "sourceType": "cumulative",
-                        "startOffset": 0,
-                        "endOffset": PAGE_SIZE,
-                        "filters": filters,
-                        "sortColumn": "severity",
-                        "sortDirection": "desc",
-                        "vulnTool": "sumid"
+                            "name": "",
+                            "description": "",
+                            "context": "",
+                            "status": -1,
+                            "createdTime": 0,
+                            "modifiedTime": 0,
+                            "groups": [],
+                            "type": "vuln",
+                            "tool": "sumid",
+                            "sourceType": "cumulative",
+                            "startOffset": 0,
+                            "endOffset": PAGE_SIZE,
+                            "filters": filters,
+                            "sortColumn": "severity",
+                            "sortDirection": "desc",
+                            "vulnTool": "sumid"
                       },
                       "sourceType": "cumulative",
                       "sortField": "severity",

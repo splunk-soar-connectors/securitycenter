@@ -5,9 +5,9 @@
     "publisher": "Splunk",
     "package_name": "phantom_tenablesc",
     "type": "network security",
-    "license": "Copyright (c) 2020 Splunk Inc.",
+    "license": "Copyright (c) 2017-2021 Splunk Inc.",
     "main_module": "tenablesc_connector.py",
-    "app_version": "2.0.2",
+    "app_version": "2.1.0",
     "latest_tested_versions": [
         "On-premise v5.15.0"
     ],
@@ -15,7 +15,7 @@
     "product_vendor": "Tenable",
     "product_name": "Tenable.sc",
     "product_version_regex": ".*",
-    "min_phantom_version": "4.8.24304",
+    "min_phantom_version": "4.10.0.40961",
     "python_version": "3",
     "logo": "logo_tenablesc.svg",
     "logo_dark": "logo_tenablesc_dark.svg",
@@ -76,7 +76,7 @@
             "read_only": true,
             "parameters": {
                 "ip_hostname": {
-                    "description": "IP/Hostname to scan (commas separated)",
+                    "description": "IP/Hostname to scan (comma-separated)",
                     "data_type": "string",
                     "contains": [
                         "ip",
@@ -84,7 +84,7 @@
                     ],
                     "primary": true,
                     "required": true,
-                    "allow_list": true
+                    "order": 0
                 },
                 "scan_policy_id": {
                     "description": "Tenable.sc Scan Policy ID to use",
@@ -93,7 +93,8 @@
                         "tenablesc scan policy id"
                     ],
                     "required": true,
-                    "primary": true
+                    "primary": true,
+                    "order": 1
                 }
             },
             "render": {
@@ -658,9 +659,9 @@
         },
         {
             "action": "list vulnerabilities",
-            "description": "Query Tenable.sc for a list of Vulnerabilities associated with an IP or host name",
+            "description": "Query Tenable.sc for a list of vulnerabilities associated with an IP or host name or CVEID",
             "type": "investigate",
-            "verbose": "If the input IP / host name is not available in the server, Action will pass with 0 vulnerability.",
+            "verbose": "If the input IP / host name / CVEID is not available in the server, Action will pass with 0 vulnerability.",
             "identifier": "list_vulnerabilities",
             "read_only": true,
             "parameters": {
@@ -672,7 +673,12 @@
                         "host name"
                     ],
                     "primary": true,
-                    "required": true
+                    "order": 0
+                },
+                "cve_id": {
+                    "description": "CVEID to query",
+                    "data_type": "string",
+                    "order": 1
                 }
             },
             "render": {
@@ -700,6 +706,10 @@
                     "example_values": [
                         "1.1.1.1"
                     ]
+                },
+                {
+                    "data_path": "action_result.parameter.cve_id",
+                    "data_type": "string"
                 },
                 {
                     "data_path": "action_result.data.*.endOffset",
@@ -790,7 +800,7 @@
                     "data_path": "action_result.data.*.results.*.total",
                     "data_type": "string",
                     "column_name": "Count",
-                    "column_order": 44,
+                    "column_order": 4,
                     "example_values": [
                         "1"
                     ]
