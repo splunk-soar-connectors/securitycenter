@@ -15,18 +15,19 @@
 #
 #
 # Phantom App imports
-import phantom.app as phantom
-from phantom.base_connector import BaseConnector
-from phantom.action_result import ActionResult
-import phantom.utils as ph_utils
-
-# Imports local to this App
-import requests
 import datetime
 import json
-import time
 import sys
+import time
+
+import phantom.app as phantom
+import phantom.utils as ph_utils
+# Imports local to this App
+import requests
 from bs4 import BeautifulSoup, UnicodeDammit
+from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
+
 from tenablesc_consts import *
 
 
@@ -58,14 +59,15 @@ class SecurityCenterConnector(BaseConnector):
 
         try:
             if input_str and (self._python_version == 2 or always_encode):
-                input_str = UnicodeDammit(input_str).unicode_markup.encode('utf-8')
-        except:
+                input_str = UnicodeDammit(input_str).unicode_markup.encode("utf-8")
+        except Exception as ex:
+            self.debug_print(ex)
             self.debug_print("Error occurred while handling python 2to3 compatibility for the input string")
 
         return input_str
 
     def _get_error_message_from_exception(self, e):
-        """ This method is used to get appropriate error message from the exception.
+        """This method is used to get appropriate error message from the exception.
         :param e: Exception object
         :return: error message
         """
@@ -83,7 +85,8 @@ class SecurityCenterConnector(BaseConnector):
             else:
                 error_code = TENABLE_ERR_CODE_UNAVAILABLE
                 error_msg = TENABLE_ERR_MSG_UNAVAILABLE
-        except:
+        except Exception as ex:
+            self.debug_print(ex)
             error_code = TENABLE_ERR_CODE_UNAVAILABLE
             error_msg = TENABLE_ERR_MSG_UNAVAILABLE
 
@@ -91,7 +94,8 @@ class SecurityCenterConnector(BaseConnector):
             error_msg = self._handle_py_ver_compat_for_input_str(error_msg)
         except TypeError:
             error_msg = TENABLE_UNICODE_DAMMIT_TYPE_ERR_MESSAGE
-        except:
+        except Exception as ex:
+            self.debug_print(ex)
             error_msg = TENABLE_ERR_MSG_UNAVAILABLE
 
         return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
@@ -100,16 +104,33 @@ class SecurityCenterConnector(BaseConnector):
         if parameter is not None:
             try:
                 if not float(parameter).is_integer():
-                    return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="", param=key)), None
+                    return (
+                        action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="", param=key)),
+                        None,
+                    )
 
                 parameter = int(parameter)
-            except:
-                return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="", param=key)), None
+            except Exception as ex:
+                self.debug_print(ex)
+                return (
+                    action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="", param=key)),
+                    None,
+                )
 
             if parameter < 0:
-                return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="non-negative", param=key)), None
+                return (
+                    action_result.set_status(
+                        phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="non-negative", param=key)
+                    ),
+                    None,
+                )
             if not allow_zero and parameter == 0:
-                return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="non-zero positive", param=key)), None
+                return (
+                    action_result.set_status(
+                        phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="non-zero positive", param=key)
+                    ),
+                    None,
+                )
 
         return phantom.APP_SUCCESS, parameter
 
@@ -122,7 +143,7 @@ class SecurityCenterConnector(BaseConnector):
         for retry in range(1, self._retry_count + 1):
 
             self._session = requests.Session()
-            self._session.headers = {'Content-type': 'application/json', 'accept': 'application/json'}
+            self._session.headers = {"Content-type": "application/json", "accept": "application/json"}
             auth_data = {"username": config["username"], "password": config["password"]}
 
             if retry > 1:
@@ -131,9 +152,10 @@ class SecurityCenterConnector(BaseConnector):
                 time.sleep(self._retry_wait)
 
             self.save_progress("Getting token for session...; try #{}".format(retry))
-            r = None
             try:
-                r = self._session.post("{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify)
+                r = self._session.post(
+                    "{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify
+                )
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
@@ -148,7 +170,7 @@ class SecurityCenterConnector(BaseConnector):
                 self.save_progress(error_msg)
                 continue
 
-            if r is None:
+            if not r:
                 error_msg = "Error: no response from server"
                 self.save_progress(error_msg)
                 continue
@@ -167,9 +189,11 @@ class SecurityCenterConnector(BaseConnector):
                 self.save_progress(error_msg)
                 continue
 
-            if rjson.get('error_code'):
-                error_msg = "Error: error code {}: {}".format(rjson.get('error_code'),
-                    self._handle_py_ver_compat_for_input_str(rjson.get('error_msg').replace('\n', ' ').strip()))
+            if rjson.get("error_code"):
+                error_msg = "Error: error code {}: {}".format(
+                    rjson.get("error_code"),
+                    self._handle_py_ver_compat_for_input_str(rjson.get("error_msg").replace("\n", " ").strip()),
+                )
                 self.save_progress(error_msg)
                 continue
 
@@ -180,16 +204,20 @@ class SecurityCenterConnector(BaseConnector):
                 self.save_progress(error_msg)
                 continue
 
-            self._session.headers.update({'X-SecurityCenter': str(token)})
+            self._session.headers.update({"X-SecurityCenter": str(token)})
             self._good_token = True
             return phantom.APP_SUCCESS
 
-        if rjson.get('error_code'):
-            error_msg = "Error: error code {}: {}".format(rjson.get('error_code'),
-                self._handle_py_ver_compat_for_input_str(rjson.get('error_msg').replace('\n', ' ').strip()))
+        if rjson.get("error_code"):
+            error_msg = "Error: error code {}: {}".format(
+                rjson.get("error_code"),
+                self._handle_py_ver_compat_for_input_str(rjson.get("error_msg").replace("\n", " ").strip()),
+            )
             self.save_progress(error_msg)
 
-        return self.set_status(phantom.APP_ERROR, "Error: Exceeded number of retries to get token; {}".format(error_msg))
+        return self.set_status(
+            phantom.APP_ERROR, "Error: Exceeded number of retries to get token; {}".format(error_msg)
+        )
 
     def initialize(self):
 
@@ -201,16 +229,18 @@ class SecurityCenterConnector(BaseConnector):
         try:
             self._python_version = int(sys.version_info[0])
         except:
-            return self.set_status(phantom.APP_ERROR, "Error occurred while fetching the Phantom server's Python major version")
+            return self.set_status(
+                phantom.APP_ERROR, "Error occurred while fetching the Phantom server's Python major version"
+            )
 
         self._verify = config["verify_server_cert"]
         self._rest_url = self._handle_py_ver_compat_for_input_str(config["base_url"].rstrip("/"))
 
-        ret_val, self._retry_count = self._validate_integer(self, config.get('retry_count', 5), "Maximum attempts")
+        ret_val, self._retry_count = self._validate_integer(self, config.get("retry_count", 5), "Maximum attempts")
         if phantom.is_fail(ret_val):
             return self.get_status()
 
-        ret_val, self._retry_wait = self._validate_integer(self, config.get('retry_wait', 30), "Delay")
+        ret_val, self._retry_wait = self._validate_integer(self, config.get("retry_wait", 30), "Delay")
         if phantom.is_fail(ret_val):
             return self.get_status()
 
@@ -226,7 +256,7 @@ class SecurityCenterConnector(BaseConnector):
         # Logout
         ret_val = phantom.APP_SUCCESS
         if self._good_token:
-            ret_val, resp = self._make_rest_call('/token', self, method='delete')
+            ret_val, resp = self._make_rest_call("/token", self, method="delete")
         return ret_val
 
     def _process_html_response(self, response, action_result):
@@ -237,16 +267,18 @@ class SecurityCenterConnector(BaseConnector):
         try:
             soup = BeautifulSoup(response.text, "html.parser")
             error_text = soup.text
-            split_lines = error_text.split('\n')
+            split_lines = error_text.split("\n")
             split_lines = [x.strip() for x in split_lines if x.strip()]
-            error_text = '\n'.join(split_lines)
-        except:
+            error_text = "\n".join(split_lines)
+        except Exception as ex:
+            self.debug_print(ex)
             error_text = "Cannot parse error details"
 
-        message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code,
-                        self._handle_py_ver_compat_for_input_str(error_text))
+        message = "Status Code: {0}. Data from server:\n{1}\n".format(
+            status_code, self._handle_py_ver_compat_for_input_str(error_text)
+        )
 
-        message = message.replace('{', '{{').replace('}', '}}')
+        message = message.replace("{", "{{").replace("}", "}}")
 
         return action_result.set_status(phantom.APP_ERROR, message), None
 
@@ -263,27 +295,31 @@ class SecurityCenterConnector(BaseConnector):
             return phantom.APP_SUCCESS, resp_json
 
         action_result.add_data(resp_json)
-        message = self._handle_py_ver_compat_for_input_str(r.text.replace('{', '{{').replace('}', '}}'))
-        return action_result.set_status(phantom.APP_ERROR,
-                                        "Error from server, Status Code: {0} data returned: {1}".format(
-                                            r.status_code, message)), resp_json
+        message = self._handle_py_ver_compat_for_input_str(r.text.replace("{", "{{").replace("}", "}}"))
+        return (
+            action_result.set_status(
+                phantom.APP_ERROR,
+                "Error from server, Status Code: {0} data returned: {1}".format(r.status_code, message),
+            ),
+            resp_json,
+        )
 
     def _process_response(self, r, action_result):
 
         # store the r_text in debug data, it will get dumped in the logs if an error occurs
-        if hasattr(action_result, 'add_debug_data'):
+        if hasattr(action_result, "add_debug_data"):
             if r is not None:
-                action_result.add_debug_data({'r_text': r.text})
-                action_result.add_debug_data({'r_headers': r.headers})
-                action_result.add_debug_data({'r_status_code': r.status_code})
+                action_result.add_debug_data({"r_text": r.text})
+                action_result.add_debug_data({"r_headers": r.headers})
+                action_result.add_debug_data({"r_status_code": r.status_code})
             else:
-                action_result.add_debug_data({'r_text': 'r is None'})
+                action_result.add_debug_data({"r_text": "r is None"})
 
         # There are just too many differences in the response to handle all of them in the same function
-        if 'json' in r.headers.get('Content-Type', ''):
+        if "json" in r.headers.get("Content-Type", ""):
             return self._process_json_response(r, action_result)
 
-        if 'html' in r.headers.get('Content-Type', ''):
+        if "html" in r.headers.get("Content-Type", ""):
             return self._process_html_response(r, action_result)
 
         # it's not an html or json, handle if it is a successful empty response
@@ -292,7 +328,8 @@ class SecurityCenterConnector(BaseConnector):
 
         # everything else is actually an error at this point
         message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
-            r.status_code, self._handle_py_ver_compat_for_input_str(r.text.replace('{', '{{').replace('}', '}}')))
+            r.status_code, self._handle_py_ver_compat_for_input_str(r.text.replace("{", "{{").replace("}", "}}"))
+        )
 
         return action_result.set_status(phantom.APP_ERROR, message), None
 
@@ -354,9 +391,11 @@ class SecurityCenterConnector(BaseConnector):
                 self.save_progress(error_msg)
                 continue
 
-            if rjson.get('error_code'):
-                error_msg = "Error: error code {}: {}".format(rjson.get('error_code'),
-                                                              self._handle_py_ver_compat_for_input_str(rjson.get('error_msg').replace('\n', ' ').strip()))
+            if rjson.get("error_code"):
+                error_msg = "Error: error code {}: {}".format(
+                    rjson.get("error_code"),
+                    self._handle_py_ver_compat_for_input_str(rjson.get("error_msg").replace("\n", " ").strip()),
+                )
                 self.send_progress(error_msg)
                 continue
 
@@ -367,8 +406,12 @@ class SecurityCenterConnector(BaseConnector):
 
     def load_dirty_json(self, dirty_json):
         import re
-        regex_replace = [(r"([ \{,:\[])(u)?'([^']+)'", r'\1"\3"'), (r" False([, \}\]])", r' false\1'),
-                         (r" True([, \}\]])", r' true\1')]
+
+        regex_replace = [
+            (r"([ \{,:\[])(u)?'([^']+)'", r'\1"\3"'),
+            (r" False([, \}\]])", r" false\1"),
+            (r" True([, \}\]])", r" true\1"),
+        ]
         for r, s in regex_replace:
             dirty_json = re.sub(r, s, dirty_json)
         clean_json = json.loads(dirty_json, strict=False)
@@ -378,9 +421,9 @@ class SecurityCenterConnector(BaseConnector):
     def _test_connectivity(self):
 
         self.save_progress("Checking connectivity to your Tenable.sc instance...")
-        ret_val, resp_json = self._make_rest_call('/user', self)
+        ret_val, resp_json = self._make_rest_call("/user", self)
         if phantom.is_fail(ret_val):
-            self.append_to_message('Test connectivity failed')
+            self.append_to_message("Test connectivity failed")
             return self.get_status()
         else:
             return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to Tenable.sc was successful.")
@@ -393,29 +436,32 @@ class SecurityCenterConnector(BaseConnector):
         ip_hostname = self._handle_py_ver_compat_for_input_str(param[IP_HOSTNAME])
 
         # Clean up ip hostname
-        ip_hostname = [x.strip() for x in ip_hostname.split(',')]
+        ip_hostname = [x.strip() for x in ip_hostname.split(",")]
         ip_hostname = list(filter(None, ip_hostname))
-        ip_hostname = ','.join(ip_hostname)
+        ip_hostname = ",".join(ip_hostname)
         ip_hostname = ip_hostname.replace("https://", "")
         ip_hostname = ip_hostname.replace("http://", "")
 
         try:
             if not ph_utils.is_hostname(ip_hostname) and not ph_utils.is_ip(ip_hostname):
                 return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
-        except:
+        except Exception as ex:
+            self.debug_print(ex)
             return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
 
         ret_val, scan_policy_id = self._validate_integer(action_result, param[SCAN_POLICY], "Scan policy ID")
         if phantom.is_fail(ret_val):
             return action_result.get_status()
-        ret_val, scan_repository_id = self._validate_integer(action_result,
-                                                             param.get(REPOSITORY_ID, 1),
-                                                             "Scan repository ID")
+        ret_val, scan_repository_id = self._validate_integer(
+            action_result, param.get(REPOSITORY_ID, 1), "Scan repository ID"
+        )
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
         if len(str(scan_policy_id)) > 10:
-            return action_result.set_status(phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs.")
+            return action_result.set_status(
+                phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs."
+            )
 
         # Calculate scan start time with a defined delay
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
@@ -431,19 +477,16 @@ class SecurityCenterConnector(BaseConnector):
             "zone": {"id": -1},
             "ipList": str(ip_hostname),
             "credentials": [],
-            "maxScanTime": "unlimited"
+            "maxScanTime": "unlimited",
         }
 
-        self.debug_print('SCAN DATA')
-        self.debug_print(scan_data)
-
-        ret_val, resp_json = self._make_rest_call('/scan', action_result, json=scan_data, method='post')
+        ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post")
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
         action_result.add_data(resp_json["response"])
-        action_result.update_summary({'name': resp_json["response"]["name"]})
+        action_result.update_summary({"name": resp_json["response"]["name"]})
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -452,10 +495,12 @@ class SecurityCenterConnector(BaseConnector):
 
         list_vuln_host = self._handle_py_ver_compat_for_input_str(param.get(IP_HOSTNAME))
         if list_vuln_host and not ph_utils.is_ip(list_vuln_host):
-            if len(list_vuln_host) > 255 or set(' !"\'@#$%^&*(){};[]|').intersection(list_vuln_host):
-                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities")
+            if len(list_vuln_host) > 255 or set(" !\"'@#$%^&*(){};[]|").intersection(list_vuln_host):
+                return action_result.set_status(
+                    phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities"
+                )
 
-        cve_id = self._handle_py_ver_compat_for_input_str(param.get('cve_id'))
+        cve_id = self._handle_py_ver_compat_for_input_str(param.get("cve_id"))
 
         if not cve_id and not list_vuln_host:
             return action_result.set_status(phantom.APP_ERROR, "Please provide either IP address/Hostname or CVE ID")
@@ -463,32 +508,38 @@ class SecurityCenterConnector(BaseConnector):
         filters = list()
         if list_vuln_host:
             if phantom.is_ip(list_vuln_host) is True:
-                filters.append({
-                    "id": "ip",
-                    "filterName": "ip",
-                    "operator": "=",
-                    "type": "vuln",
-                    "isPredefined": True,
-                    "value": str(list_vuln_host).strip()
-                })
+                filters.append(
+                    {
+                        "id": "ip",
+                        "filterName": "ip",
+                        "operator": "=",
+                        "type": "vuln",
+                        "isPredefined": True,
+                        "value": str(list_vuln_host).strip(),
+                    }
+                )
             else:
-                filters.append({
-                    "id": "dns",
-                    "filterName": "dnsName",
+                filters.append(
+                    {
+                        "id": "dns",
+                        "filterName": "dnsName",
+                        "operator": "=",
+                        "type": "vuln",
+                        "isPredefined": True,
+                        "value": str(list_vuln_host).strip(),
+                    }
+                )
+        if cve_id:
+            filters.append(
+                {
+                    "id": "cveID",
+                    "filterName": "cveID",
                     "operator": "=",
                     "type": "vuln",
                     "isPredefined": True,
-                    "value": str(list_vuln_host).strip()
-                })
-        if cve_id:
-            filters.append({
-                "id": "cveID",
-                "filterName": "cveID",
-                "operator": "=",
-                "type": "vuln",
-                "isPredefined": True,
-                "value": str(cve_id).strip()
-            })
+                    "value": str(cve_id).strip(),
+                }
+            )
 
         query_string = {
             "query": {
@@ -507,12 +558,13 @@ class SecurityCenterConnector(BaseConnector):
                 "filters": filters,
                 "sortColumn": "severity",
                 "sortDirection": "desc",
-                "vulnTool": "sumid"
+                "vulnTool": "sumid",
             },
             "sourceType": "cumulative",
             "sortField": "severity",
-            "sortDir": "desc", "columns": [],
-            "type": "vuln"
+            "sortDir": "desc",
+            "columns": [],
+            "type": "vuln",
         }
 
         final_data = {}
@@ -537,22 +589,29 @@ class SecurityCenterConnector(BaseConnector):
         final_data["endOffset"] = query_string["query"]["endOffset"]
 
         action_result.add_data(final_data)
-        action_result.update_summary({'total_vulnerabilities': len(final_data.get("results", []))})
+        action_result.update_summary({"total_vulnerabilities": len(final_data.get("results", []))})
 
         crit_vulns = high_vulns = med_vulns = low_vulns = info_vulns = 0
         for vuln in final_data.get("results", []):
-            if vuln["severity"]["id"] == '4':
+            if vuln["severity"]["id"] == "4":
                 crit_vulns += 1
-            elif vuln["severity"]["id"] == '3':
+            elif vuln["severity"]["id"] == "3":
                 high_vulns += 1
-            elif vuln["severity"]["id"] == '2':
+            elif vuln["severity"]["id"] == "2":
                 med_vulns += 1
-            elif vuln["severity"]["id"] == '1':
+            elif vuln["severity"]["id"] == "1":
                 low_vulns += 1
-            elif vuln["severity"]["id"] == '0':
+            elif vuln["severity"]["id"] == "0":
                 info_vulns += 1
-        action_result.update_summary({'critical_vulns': crit_vulns, 'high_vulns': high_vulns, 'medium_vulns': med_vulns,
-                                      'low_vulns': low_vulns, 'info_vulns': info_vulns})
+        action_result.update_summary(
+            {
+                "critical_vulns": crit_vulns,
+                "high_vulns": high_vulns,
+                "medium_vulns": med_vulns,
+                "low_vulns": low_vulns,
+                "info_vulns": info_vulns,
+            }
+        )
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
@@ -564,7 +623,7 @@ class SecurityCenterConnector(BaseConnector):
             return action_result.get_status()
 
         action_result.add_data(resp_json["response"])
-        action_result.update_summary({'policy_count': len(resp_json["response"].get("usable", []))})
+        action_result.update_summary({"policy_count": len(resp_json["response"].get("usable", []))})
         message = "Total policies: {}".format(len(resp_json["response"].get("usable", [])))
 
         return action_result.set_status(phantom.APP_SUCCESS, message)
@@ -575,24 +634,27 @@ class SecurityCenterConnector(BaseConnector):
         """
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        asset_name = self._handle_py_ver_compat_for_input_str(param['asset_name'])
+        asset_name = self._handle_py_ver_compat_for_input_str(param["asset_name"])
         try:
-            update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param['update_fields']))
+            update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param["update_fields"]))
             if not isinstance(update_fields, dict):
-                return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
-        except:
+                return action_result.set_status(
+                    phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields")
+                )
+        except Exception as ex:
+            self.debug_print(ex)
             return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
 
-        endpoint = '/asset'
+        endpoint = "/asset"
 
-        ret_val, resp_json = self._make_rest_call(endpoint, action_result, params={'fields': 'id,name'})
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result, params={"fields": "id,name"})
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        for sc_asset in resp_json['response']['manageable'] + resp_json['response']['usable']:
-            if sc_asset['name'] == asset_name:
-                self.save_progress('Asset found, attempting to update it.')
-                endpoint = '{}/{}'.format(endpoint, sc_asset['id'])
+        for sc_asset in resp_json["response"]["manageable"] + resp_json["response"]["usable"]:
+            if sc_asset["name"] == asset_name:
+                self.save_progress("Asset found, attempting to update it.")
+                endpoint = "{}/{}".format(endpoint, sc_asset["id"])
 
                 ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
                 if phantom.is_fail(ret_val):
@@ -600,14 +662,14 @@ class SecurityCenterConnector(BaseConnector):
 
                 action_result.add_data(resp_json)
 
-                return action_result.set_status(phantom.APP_SUCCESS, 'Successfully updated asset.')
+                return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated asset.")
 
-        self.save_progress('Asset does not exist, attempting to create it.')
+        self.save_progress("Asset does not exist, attempting to create it.")
         # Asset doesn't exist, creating new one with provided name.
-        if 'type' not in update_fields:
-            update_fields['type'] = 'static'
-        if 'name' not in update_fields:
-            update_fields['name'] = asset_name
+        if "type" not in update_fields:
+            update_fields["type"] = "static"
+        if "name" not in update_fields:
+            update_fields["name"] = asset_name
 
         ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="post")
         if phantom.is_fail(ret_val):
@@ -615,7 +677,7 @@ class SecurityCenterConnector(BaseConnector):
 
         action_result.add_data(resp_json)
 
-        return action_result.set_status(phantom.APP_SUCCESS, 'Successfully created new asset.')
+        return action_result.set_status(phantom.APP_SUCCESS, "Successfully created new asset.")
 
     def _update_group(self, param):
         """
@@ -623,24 +685,27 @@ class SecurityCenterConnector(BaseConnector):
         """
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        group_name = self._handle_py_ver_compat_for_input_str(param['group_name'])
+        group_name = self._handle_py_ver_compat_for_input_str(param["group_name"])
         try:
-            update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param['update_fields']))
+            update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param["update_fields"]))
             if not isinstance(update_fields, dict):
-                return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
-        except:
+                return action_result.set_status(
+                    phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields")
+                )
+        except Exception as ex:
+            self.debug_print(ex)
             return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
 
-        endpoint = '/group'
+        endpoint = "/group"
 
-        ret_val, resp_json = self._make_rest_call(endpoint, action_result, params={'fields': 'id,name'})
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result, params={"fields": "id,name"})
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        for sc_group in resp_json['response']:
-            if sc_group['name'] == group_name:
-                self.save_progress('Group found, attempting to update it.')
-                endpoint = '{}/{}'.format(endpoint, sc_group['id'])
+        for sc_group in resp_json["response"]:
+            if sc_group["name"] == group_name:
+                self.save_progress("Group found, attempting to update it.")
+                endpoint = "{}/{}".format(endpoint, sc_group["id"])
 
                 ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
                 if phantom.is_fail(ret_val):
@@ -648,7 +713,7 @@ class SecurityCenterConnector(BaseConnector):
 
                 action_result.add_data(resp_json)
 
-                return action_result.set_status(phantom.APP_SUCCESS, 'Successfully updated group.')
+                return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated group.")
 
         # Group does not exist
         message = 'Group "{}" not found.'.format(group_name)
@@ -660,8 +725,6 @@ class SecurityCenterConnector(BaseConnector):
 
         # Get the action that we are supposed to execute for this App Run
         action_id = self.get_action_identifier()
-
-        self.debug_print("action_id", action_id)
 
         if action_id == self.ACTION_ID_GET_IP_VULNERABILITIES:
             ret_val = self._list_vulnerabilities(param)
@@ -679,7 +742,7 @@ class SecurityCenterConnector(BaseConnector):
         return ret_val
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     import pudb
 
