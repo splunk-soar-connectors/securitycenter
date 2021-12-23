@@ -31,7 +31,6 @@ from tenablesc_consts import *
 
 
 class SecurityCenterConnector(BaseConnector):
-
     ACTION_ID_TEST_ASSET_CONNECTIVITY = "test_asset_connectivity"
     ACTION_ID_SCAN_ENDPOINT = "scan_endpoint"
     ACTION_ID_LIST_SCAN_POLICIES = "list_policies"
@@ -357,7 +356,7 @@ class SecurityCenterConnector(BaseConnector):
 
             if rjson.get('error_code'):
                 error_msg = "Error: error code {}: {}".format(rjson.get('error_code'),
-                    self._handle_py_ver_compat_for_input_str(rjson.get('error_msg').replace('\n', ' ').strip()))
+                                                              self._handle_py_ver_compat_for_input_str(rjson.get('error_msg').replace('\n', ' ').strip()))
                 self.send_progress(error_msg)
                 continue
 
@@ -409,6 +408,11 @@ class SecurityCenterConnector(BaseConnector):
         ret_val, scan_policy_id = self._validate_integer(action_result, param[SCAN_POLICY], "Scan policy ID")
         if phantom.is_fail(ret_val):
             return action_result.get_status()
+        ret_val, scan_repository_id = self._validate_integer(action_result,
+                                                             param.get(REPOSITORY_ID, 1),
+                                                             "Scan repository ID")
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
 
         if len(str(scan_policy_id)) > 10:
             return action_result.set_status(phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs.")
@@ -417,10 +421,21 @@ class SecurityCenterConnector(BaseConnector):
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
         scan_start = scan_start.strftime(DATETIME_FORMAT)
         # can probably remove some of these options
-        scan_data = {"name": "Scan Launched from Phantom", "repository": {"id": 1},
-                    "schedule": {"start": scan_start, "repeatRule": "FREQ=NOW;INTERVAL=1", "type": "now"},
-                    "reports": [], "type": "policy", "policy": {"id": scan_policy_id}, "zone": {"id": -1},
-                    "ipList": str(ip_hostname), "credentials": [], "maxScanTime": "unlimited"}
+        scan_data = {
+            "name": "Scan Launched from Phantom",
+            "repository": {"id": scan_repository_id},
+            "schedule": {"start": scan_start, "repeatRule": "FREQ=NOW;INTERVAL=1", "type": "now"},
+            "reports": [],
+            "type": "policy",
+            "policy": {"id": scan_policy_id},
+            "zone": {"id": -1},
+            "ipList": str(ip_hostname),
+            "credentials": [],
+            "maxScanTime": "unlimited"
+        }
+
+        self.debug_print('SCAN DATA')
+        self.debug_print(scan_data)
 
         ret_val, resp_json = self._make_rest_call('/scan', action_result, json=scan_data, method='post')
 
@@ -449,21 +464,21 @@ class SecurityCenterConnector(BaseConnector):
         if list_vuln_host:
             if phantom.is_ip(list_vuln_host) is True:
                 filters.append({
-                                "id": "ip",
-                                "filterName": "ip",
-                                "operator": "=",
-                                "type": "vuln",
-                                "isPredefined": True,
-                                "value": str(list_vuln_host).strip()
+                    "id": "ip",
+                    "filterName": "ip",
+                    "operator": "=",
+                    "type": "vuln",
+                    "isPredefined": True,
+                    "value": str(list_vuln_host).strip()
                 })
             else:
                 filters.append({
-                                "id": "dns",
-                                "filterName": "dnsName",
-                                "operator": "=",
-                                "type": "vuln",
-                                "isPredefined": True,
-                                "value": str(list_vuln_host).strip()
+                    "id": "dns",
+                    "filterName": "dnsName",
+                    "operator": "=",
+                    "type": "vuln",
+                    "isPredefined": True,
+                    "value": str(list_vuln_host).strip()
                 })
         if cve_id:
             filters.append({
@@ -476,29 +491,29 @@ class SecurityCenterConnector(BaseConnector):
             })
 
         query_string = {
-                      "query": {
-                            "name": "",
-                            "description": "",
-                            "context": "",
-                            "status": -1,
-                            "createdTime": 0,
-                            "modifiedTime": 0,
-                            "groups": [],
-                            "type": "vuln",
-                            "tool": "sumid",
-                            "sourceType": "cumulative",
-                            "startOffset": 0,
-                            "endOffset": PAGE_SIZE,
-                            "filters": filters,
-                            "sortColumn": "severity",
-                            "sortDirection": "desc",
-                            "vulnTool": "sumid"
-                      },
-                      "sourceType": "cumulative",
-                      "sortField": "severity",
-                      "sortDir": "desc", "columns": [],
-                      "type": "vuln"
-                    }
+            "query": {
+                "name": "",
+                "description": "",
+                "context": "",
+                "status": -1,
+                "createdTime": 0,
+                "modifiedTime": 0,
+                "groups": [],
+                "type": "vuln",
+                "tool": "sumid",
+                "sourceType": "cumulative",
+                "startOffset": 0,
+                "endOffset": PAGE_SIZE,
+                "filters": filters,
+                "sortColumn": "severity",
+                "sortDirection": "desc",
+                "vulnTool": "sumid"
+            },
+            "sourceType": "cumulative",
+            "sortField": "severity",
+            "sortDir": "desc", "columns": [],
+            "type": "vuln"
+        }
 
         final_data = {}
         while True:
@@ -673,7 +688,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 2:
         print("No test json specified as input")
-        exit(0)
+        sys.exit(0)
 
     with open(sys.argv[1]) as f:
         in_json = f.read()
@@ -684,4 +699,4 @@ if __name__ == '__main__':
         ret_val = connector._handle_action(json.dumps(in_json), None)
         print(json.dumps(json.loads(ret_val), indent=4))
 
-    exit(0)
+    sys.exit(0)

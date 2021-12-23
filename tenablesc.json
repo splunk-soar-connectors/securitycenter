@@ -95,6 +95,17 @@
                     "required": true,
                     "primary": true,
                     "order": 1
+                },
+                "repository_id": {
+                    "description": "Tenable.sc Respository ID to use",
+                    "data_type": "numeric",
+                    "contains": [
+                        "tenablesc repository id"
+                    ],
+                    "default": 1,
+                    "required": true,
+                    "primary": true,
+                    "order": 2
                 }
             },
             "render": {
@@ -131,6 +142,16 @@
                     ],
                     "example_values": [
                         2
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.repository_id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "tenablesc repository id"
+                    ],
+                    "example_values": [
+                        1
                     ]
                 },
                 {
