@@ -38,6 +38,7 @@ class SecurityCenterConnector(BaseConnector):
     ACTION_ID_GET_IP_VULNERABILITIES = "list_vulnerabilities"
     ACTION_ID_UPDATE_ASSET = "update_asset"
     ACTION_ID_UPDATE_GROUP = "update_group"
+    ACTION_ID_LIST_REPOSITORY = "list_repositories"
 
     def __init__(self):
 
@@ -628,6 +629,21 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS, message)
 
+    def _list_repositories(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        ret_val, resp_json = self._make_rest_call("/repository", action_result)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        for repository in resp_json["response"]:
+            action_result.add_data(repository)
+
+        action_result.update_summary({"repository_count": len(resp_json["response"])})
+        message = "Total repositories: {}".format(len(resp_json["response"]))
+
+        return action_result.set_status(phantom.APP_SUCCESS, message)
+
     def _update_asset(self, param):
         """
         Update asset with provided name and fields. Creates new asset if it doesn't exist.
@@ -734,6 +750,8 @@ class SecurityCenterConnector(BaseConnector):
             ret_val = self._list_policies(param)
         elif action_id == self.ACTION_ID_UPDATE_ASSET:
             ret_val = self._update_asset(param)
+        elif action_id == self.ACTION_ID_LIST_REPOSITORY:
+            ret_val = self._list_repositories(param)
         elif action_id == self.ACTION_ID_UPDATE_GROUP:
             ret_val = self._update_group(param)
         elif action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY:

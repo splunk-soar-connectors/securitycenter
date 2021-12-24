@@ -1039,6 +1039,123 @@
             "versions": "EQ(*)"
         },
         {
+            "action": "list repositories",
+            "description": "Lists the repositories available in Tenable.sc",
+            "type": "investigate",
+            "identifier": "list_repositories",
+            "read_only": true,
+            "parameters": {},
+            "render": {
+                "width": 12,
+                "title": "Tenable.sc Policies",
+                "type": "table",
+                "height": 5
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ],
+                    "column_name": "ID",
+                    "column_order": 0,
+                    "contains": [
+                        "tenablesc repository id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.SCI.id",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.SCI.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "Local"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.SCI.description",
+                    "data_type": "string",
+                    "example_values": [
+                        "This Tenable.sc system"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "Repository"
+                    ],
+                    "column_name": "Name",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.dataFormat",
+                    "data_type": "string",
+                    "example_values": [
+                        "IPv4"
+                    ],
+                    "column_name": "Data Format",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string",
+                    "example_values": [
+                        "Description"
+                    ],
+                    "column_name": "Description",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Total policies: 56"
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.repository_count",
+                    "data_type": "numeric",
+                    "example_values": [
+                        2
+                    ]
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
             "action": "update asset",
             "description": "Update existing asset with provided fields or create a new one as a 'static' type",
             "verbose": "View Tenable.sc API docs for available fields to update.",
