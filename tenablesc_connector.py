@@ -155,7 +155,7 @@ class SecurityCenterConnector(BaseConnector):
             try:
                 r = self._session.post(
                     "{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify
-                )
+                )  # nosemgrep
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
@@ -358,7 +358,7 @@ class SecurityCenterConnector(BaseConnector):
             self.save_progress("Making REST call...; try #{}".format(retry))
             r = None
             try:
-                r = request_func(url, params=params, json=json, verify=self._verify)
+                r = request_func(url, params=params, json=json, verify=self._verify)  # nosemgrep
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
