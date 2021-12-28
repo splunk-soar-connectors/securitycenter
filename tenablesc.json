@@ -98,7 +98,7 @@
                     "order": 1
                 },
                 "repository_id": {
-                    "description": "Tenable.sc repository ID to use",
+                    "description": "Tenable.sc repository ID to use (Default: 1)",
                     "data_type": "numeric",
                     "contains": [
                         "tenablesc repository id"

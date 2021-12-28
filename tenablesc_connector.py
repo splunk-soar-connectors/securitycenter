@@ -444,7 +444,7 @@ class SecurityCenterConnector(BaseConnector):
         ip_hostname = ip_hostname.replace("http://", "")
 
         try:
-            if not ph_utils.is_hostname(ip_hostname) and not ph_utils.is_ip(ip_hostname):
+            if not phantom.is_hostname(ip_hostname) and not phantom.is_ip(ip_hostname):
                 return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
         except Exception as ex:
             self.debug_print(ex)
@@ -454,7 +454,7 @@ class SecurityCenterConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
         ret_val, scan_repository_id = self._validate_integer(
-            action_result, param.get(REPOSITORY_ID, 1), "Scan repository ID"
+            action_result, param.get(REPOSITORY_ID, 1), "respository_id"
         )
         if phantom.is_fail(ret_val):
             return action_result.get_status()
