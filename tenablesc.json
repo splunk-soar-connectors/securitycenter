@@ -1047,7 +1047,7 @@
             "parameters": {},
             "render": {
                 "width": 12,
-                "title": "Tenable.sc Policies",
+                "title": "Tenable.sc Repositories",
                 "type": "table",
                 "height": 5
             },

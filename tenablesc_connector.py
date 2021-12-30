@@ -460,9 +460,7 @@ class SecurityCenterConnector(BaseConnector):
             return action_result.get_status()
 
         if len(str(scan_policy_id)) > 10:
-            return action_result.set_status(
-                phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs."
-            )
+            return action_result.set_status(phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs.")
 
         # Calculate scan start time with a defined delay
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
