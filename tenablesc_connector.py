@@ -143,7 +143,7 @@ class SecurityCenterConnector(BaseConnector):
         error_msg = None
         for retry in range(1, self._retry_count + 1):
 
-            self._session = requests.Session()
+            self._session = requests.Session()  # nosemgrep
             self._session.headers = {"Content-type": "application/json", "accept": "application/json"}
             auth_data = {"username": config["username"], "password": config["password"]}
 
