@@ -637,10 +637,9 @@ class SecurityCenterConnector(BaseConnector):
         for repository in resp_json["response"]:
             action_result.add_data(repository)
 
-        action_result.update_summary({"repository_count": len(resp_json["response"])})
-        message = "Total repositories: {}".format(len(resp_json["response"]))
+        action_result.update_summary({"total_repositories": len(resp_json["response"])})
 
-        return action_result.set_status(phantom.APP_SUCCESS, message)
+        return action_result.set_status(phantom.APP_SUCCESS)
 
     def _update_asset(self, param):
         """
