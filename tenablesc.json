@@ -1124,7 +1124,7 @@
                     "data_path": "action_result.message",
                     "data_type": "string",
                     "example_values": [
-                        "Total policies: 56"
+                        "Total Repositories: 2"
                     ]
                 },
                 {
@@ -1146,7 +1146,7 @@
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.summary.repository_count",
+                    "data_path": "action_result.summary.total_repositories",
                     "data_type": "numeric",
                     "example_values": [
                         2
