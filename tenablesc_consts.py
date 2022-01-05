@@ -18,6 +18,7 @@ DATETIME_FORMAT = "TZID=UTC:%Y%m%dT%H%M%S"
 REPOSITORY_ID = "repository_id"
 SCAN_DELAY = 3
 PAGE_SIZE = 100
+INVALID_HOST_CHARS = " !\"'@#$%^&*(){};[]|"
 
 TENABLE_ERR_CODE_UNAVAILABLE = "Error code unavailable"
 TENABLE_ERR_MSG_UNAVAILABLE = (
