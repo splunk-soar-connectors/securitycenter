@@ -1,9 +1,0 @@
-.project
-docker-compose.yml
-Makefile
-.gitignore*
-.pyproject
-.git*
-.DS_Store
-.gitlab-ci.yml
-whitesource-results
