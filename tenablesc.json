@@ -5,18 +5,19 @@
     "publisher": "Splunk",
     "package_name": "phantom_tenablesc",
     "type": "network security",
-    "license": "Copyright (c) 2017-2021 Splunk Inc.",
+    "license": "Copyright (c) 2017-2022 Splunk Inc.",
     "main_module": "tenablesc_connector.py",
-    "app_version": "2.1.6",
+    "app_version": "2.2.2",
     "latest_tested_versions": [
         "On-premise v5.15.0"
     ],
-    "utctime_updated": "2021-10-29T23:53:28.000000Z",
+    "utctime_updated": "2022-01-05T10:47:00.000000Z",
     "product_vendor": "Tenable",
     "product_name": "Tenable.sc",
     "product_version_regex": ".*",
-    "min_phantom_version": "4.10.0.40961",
+    "min_phantom_version": "5.0.0",
     "python_version": "3",
+    "fips_compliant": true,
     "logo": "logo_tenablesc.svg",
     "logo_dark": "logo_tenablesc_dark.svg",
     "configuration": {
@@ -95,6 +96,16 @@
                     "required": true,
                     "primary": true,
                     "order": 1
+                },
+                "repository_id": {
+                    "description": "Tenable.sc repository ID to use (Default: 1)",
+                    "data_type": "numeric",
+                    "contains": [
+                        "tenablesc repository id"
+                    ],
+                    "default": 1,
+                    "primary": true,
+                    "order": 2
                 }
             },
             "render": {
@@ -131,6 +142,16 @@
                     ],
                     "example_values": [
                         2
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.repository_id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "tenablesc repository id"
+                    ],
+                    "example_values": [
+                        1
                     ]
                 },
                 {
@@ -1018,6 +1039,123 @@
             "versions": "EQ(*)"
         },
         {
+            "action": "list repositories",
+            "description": "Lists the repositories available in Tenable.sc",
+            "type": "investigate",
+            "identifier": "list_repositories",
+            "read_only": true,
+            "parameters": {},
+            "render": {
+                "width": 12,
+                "title": "Tenable.sc Repositories",
+                "type": "table",
+                "height": 5
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ],
+                    "column_name": "ID",
+                    "column_order": 0,
+                    "contains": [
+                        "tenablesc repository id"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.SCI.id",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.SCI.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "Local"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.SCI.description",
+                    "data_type": "string",
+                    "example_values": [
+                        "This Tenable.sc system"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "Repository"
+                    ],
+                    "column_name": "Name",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.dataFormat",
+                    "data_type": "string",
+                    "example_values": [
+                        "IPv4"
+                    ],
+                    "column_name": "Data Format",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string",
+                    "example_values": [
+                        "Description"
+                    ],
+                    "column_name": "Description",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Total Repositories: 2"
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.summary.total_repositories",
+                    "data_type": "numeric",
+                    "example_values": [
+                        2
+                    ]
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
             "action": "update asset",
             "description": "Update existing asset with provided fields or create a new one as a 'static' type",
             "verbose": "View Tenable.sc API docs for available fields to update.",
@@ -1617,5 +1755,37 @@
             ],
             "versions": "EQ(*)"
         }
-    ]
+    ],
+    "pip_dependencies": {
+        "wheel": [
+            {
+                "module": "beautifulsoup4",
+                "input_file": "wheels/beautifulsoup4-4.9.1-py3-none-any.whl"
+            },
+            {
+                "module": "certifi",
+                "input_file": "wheels/certifi-2021.10.8-py2.py3-none-any.whl"
+            },
+            {
+                "module": "chardet",
+                "input_file": "wheels/chardet-3.0.4-py2.py3-none-any.whl"
+            },
+            {
+                "module": "idna",
+                "input_file": "wheels/idna-2.10-py2.py3-none-any.whl"
+            },
+            {
+                "module": "requests",
+                "input_file": "wheels/requests-2.25.0-py2.py3-none-any.whl"
+            },
+            {
+                "module": "soupsieve",
+                "input_file": "wheels/soupsieve-2.3.1-py3-none-any.whl"
+            },
+            {
+                "module": "urllib3",
+                "input_file": "wheels/urllib3-1.26.7-py2.py3-none-any.whl"
+            }
+        ]
+    }
 }
