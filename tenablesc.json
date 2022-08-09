@@ -106,6 +106,21 @@
                     "default": 1,
                     "primary": true,
                     "order": 2
+                },
+                "credential_id": {
+                    "description": "Tenable.sc credential ID to use",
+                    "data_type": "numeric",
+                    "required": false,
+                    "primary": true,
+                    "contains": [
+                        "tenablesc credential id"
+                    ],
+                    "value_list": [],
+                    "default": "",
+                    "order": 3,
+                    "name": "credential_id",
+                    "id": 4,
+                    "param_name": "credential_id"
                 }
             },
             "render": {

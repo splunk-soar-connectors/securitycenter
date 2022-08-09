@@ -462,6 +462,15 @@ class SecurityCenterConnector(BaseConnector):
         if len(str(scan_policy_id)) > 10:
             return action_result.set_status(phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs.")
 
+        # Validate credential ID if one supplied
+        credential_id = param.get(CREDENTIAL_ID)
+        if credential_id:
+            ret_val, credential_id = self._validate_integer(
+                action_result, param.get(CREDENTIAL_ID, 1), "credential_id"
+            )
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+
         # Calculate scan start time with a defined delay
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
         scan_start = scan_start.strftime(DATETIME_FORMAT)
@@ -478,6 +487,10 @@ class SecurityCenterConnector(BaseConnector):
             "credentials": [],
             "maxScanTime": "unlimited",
         }
+
+        # Add in creds if supplied
+        if credential_id:
+            scan_data["credentials"].append({"id": credential_id})
 
         ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post")
 

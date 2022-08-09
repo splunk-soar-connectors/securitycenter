@@ -16,6 +16,7 @@ IP_HOSTNAME = "ip_hostname"
 SCAN_POLICY = "scan_policy_id"
 DATETIME_FORMAT = "TZID=UTC:%Y%m%dT%H%M%S"
 REPOSITORY_ID = "repository_id"
+CREDENTIAL_ID = "credential_id"
 SCAN_DELAY = 3
 PAGE_SIZE = 100
 INVALID_HOST_CHARS = " !\"'@#$%^&*(){};[]|"
