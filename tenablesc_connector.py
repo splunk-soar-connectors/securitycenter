@@ -68,38 +68,31 @@ class SecurityCenterConnector(BaseConnector):
         return input_str
 
     def _get_error_message_from_exception(self, e):
-        """This method is used to get appropriate error message from the exception.
+        """
+        Get appropriate error message from the exception.
         :param e: Exception object
         :return: error message
         """
+
         error_code = TENABLE_ERR_CODE_UNAVAILABLE
         error_msg = TENABLE_ERR_MSG_UNAVAILABLE
 
         try:
-            if e.args:
+            if hasattr(e, "args"):
                 if len(e.args) > 1:
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = TENABLE_ERR_CODE_UNAVAILABLE
                     error_msg = e.args[0]
-            else:
-                error_code = TENABLE_ERR_CODE_UNAVAILABLE
-                error_msg = TENABLE_ERR_MSG_UNAVAILABLE
-        except Exception as ex:
-            self.debug_print(ex)
-            error_code = TENABLE_ERR_CODE_UNAVAILABLE
-            error_msg = TENABLE_ERR_MSG_UNAVAILABLE
+        except Exception as e:
+            self.debug_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
 
-        try:
-            error_msg = self._handle_py_ver_compat_for_input_str(error_msg)
-        except TypeError:
-            error_msg = TENABLE_UNICODE_DAMMIT_TYPE_ERR_MESSAGE
-        except Exception as ex:
-            self.debug_print(ex)
-            error_msg = TENABLE_ERR_MSG_UNAVAILABLE
+        if not error_code:
+            error_text = "Error Message: {}".format(error_msg)
+        else:
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
 
-        return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
+        return error_text
 
     def _validate_integer(self, action_result, parameter, key, allow_zero=False):
         if parameter is not None:
