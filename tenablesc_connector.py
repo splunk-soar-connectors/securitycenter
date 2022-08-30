@@ -39,6 +39,7 @@ class SecurityCenterConnector(BaseConnector):
     ACTION_ID_UPDATE_ASSET = "update_asset"
     ACTION_ID_UPDATE_GROUP = "update_group"
     ACTION_ID_LIST_REPOSITORY = "list_repositories"
+    ACTION_ID_LIST_CREDENTIAL = "list_credentials"
 
     def __init__(self):
 
@@ -62,8 +63,8 @@ class SecurityCenterConnector(BaseConnector):
             if input_str and (self._python_version == 2 or always_encode):
                 input_str = UnicodeDammit(input_str).unicode_markup.encode("utf-8")
         except Exception as ex:
-            self.debug_print(ex)
-            self.debug_print("Error occurred while handling python 2to3 compatibility for the input string")
+            self.error_print(ex)
+            self.error_print("Error occurred while handling python 2to3 compatibility for the input string")
 
         return input_str
 
@@ -85,7 +86,7 @@ class SecurityCenterConnector(BaseConnector):
                 elif len(e.args) == 1:
                     error_msg = e.args[0]
         except Exception as e:
-            self.debug_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
+            self.error_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
 
         if not error_code:
             error_text = "Error Message: {}".format(error_msg)
@@ -105,7 +106,7 @@ class SecurityCenterConnector(BaseConnector):
 
                 parameter = int(parameter)
             except Exception as ex:
-                self.debug_print(ex)
+                self.error_print(ex)
                 return (
                     action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="", param=key)),
                     None,
@@ -176,7 +177,7 @@ class SecurityCenterConnector(BaseConnector):
 
             except Exception as e:
                 error_msg = self._get_error_message_from_exception(e)
-                self.debug_print("Exception: {}".format(error_msg))
+                self.error_print("Exception: {}".format(error_msg))
 
             if len(rjson) == 0:
                 error_msg = "Error: response not json compliant"
@@ -265,7 +266,7 @@ class SecurityCenterConnector(BaseConnector):
             split_lines = [x.strip() for x in split_lines if x.strip()]
             error_text = "\n".join(split_lines)
         except Exception as ex:
-            self.debug_print(ex)
+            self.error_print(ex)
             error_text = "Cannot parse error details"
 
         message = "Status Code: {0}. Data from server:\n{1}\n".format(
@@ -378,7 +379,7 @@ class SecurityCenterConnector(BaseConnector):
 
             except Exception as e:
                 error_msg = self._get_error_message_from_exception(e)
-                self.debug_print("Exception: {}".format(error_msg))
+                self.error_print("Exception: {}".format(error_msg))
 
             if len(rjson) == 0:
                 error_msg = "Error: response not json compliant"
@@ -440,7 +441,7 @@ class SecurityCenterConnector(BaseConnector):
             if not phantom.is_hostname(ip_hostname) and not phantom.is_ip(ip_hostname):
                 return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
         except Exception as ex:
-            self.debug_print(ex)
+            self.error_print(ex)
             return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
 
         ret_val, scan_policy_id = self._validate_integer(action_result, param[SCAN_POLICY], "Scan policy ID")
@@ -661,7 +662,7 @@ class SecurityCenterConnector(BaseConnector):
                     phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields")
                 )
         except Exception as ex:
-            self.debug_print(ex)
+            self.error_print(ex)
             return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
 
         endpoint = "/asset"
@@ -712,7 +713,7 @@ class SecurityCenterConnector(BaseConnector):
                     phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields")
                 )
         except Exception as ex:
-            self.debug_print(ex)
+            self.error_print(ex)
             return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
 
         endpoint = "/group"
@@ -738,6 +739,20 @@ class SecurityCenterConnector(BaseConnector):
         message = 'Group "{}" not found.'.format(group_name)
         return action_result.set_status(phantom.APP_ERROR, message)
 
+    def _list_credentials(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        ret_val, resp_json = self._make_rest_call("/credential", action_result)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        for credential in resp_json["response"].get("usable"):
+            action_result.add_data(credential)
+
+        action_result.update_summary({"total_credentials": len(resp_json["response"].get("usable"))})
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
     def handle_action(self, param):
 
         ret_val = None
@@ -757,6 +772,8 @@ class SecurityCenterConnector(BaseConnector):
             ret_val = self._list_repositories(param)
         elif action_id == self.ACTION_ID_UPDATE_GROUP:
             ret_val = self._update_group(param)
+        elif action_id == self.ACTION_ID_LIST_CREDENTIAL:
+            ret_val = self._list_credentials(param)
         elif action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity()
 
