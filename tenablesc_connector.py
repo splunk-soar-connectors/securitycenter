@@ -70,7 +70,7 @@ class SecurityCenterConnector(BaseConnector):
                 elif len(e.args) == 1:
                     error_msg = e.args[0]
         except Exception as e:
-            self._dump_error_log("Error occurred while fetching exception information. Details: {}".format(str(e)))
+            self.debug_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
 
         if not error_code:
             error_text = "Error Message: {}".format(error_msg)
@@ -161,7 +161,7 @@ class SecurityCenterConnector(BaseConnector):
 
             except Exception as e:
                 error_msg = self._get_error_message_from_exception(e)
-                self._dump_error_log("Exception: {}".format(error_msg))
+                self.debug_print("Exception: {}".format(error_msg))
 
             if len(rjson) == 0:
                 error_msg = "Error: response not json compliant"
@@ -250,7 +250,7 @@ class SecurityCenterConnector(BaseConnector):
             split_lines = [x.strip() for x in split_lines if x.strip()]
             error_text = "\n".join(split_lines)
         except Exception as ex:
-            self._dump_error_log(ex)
+            self.debug_print(ex)
             error_text = "Cannot parse error details"
 
         message = "Status Code: {0}. Data from server:\n{1}\n".format(
@@ -363,7 +363,7 @@ class SecurityCenterConnector(BaseConnector):
 
             except Exception as e:
                 error_msg = self._get_error_message_from_exception(e)
-                self._dump_error_log("Exception: {}".format(error_msg))
+                self.debug_print("Exception: {}".format(error_msg))
 
             if len(rjson) == 0:
                 error_msg = "Error: response not json compliant"
