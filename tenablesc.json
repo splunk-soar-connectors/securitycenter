@@ -114,10 +114,7 @@
                     "contains": [
                         "tenablesc credential id"
                     ],
-                    "order": 3,
-                    "name": "credential_id",
-                    "id": 4,
-                    "param_name": "credential_id"
+                    "order": 3
                 }
             },
             "render": {
