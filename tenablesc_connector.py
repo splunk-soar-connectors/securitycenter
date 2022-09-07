@@ -204,14 +204,6 @@ class SecurityCenterConnector(BaseConnector):
 
         config = self.get_config()
 
-        # Fetching the Python major version
-        try:
-            self._python_version = int(sys.version_info[0])
-        except:
-            return self.set_status(
-                phantom.APP_ERROR, "Error occurred while fetching the Phantom server's Python major version"
-            )
-
         self._verify = config["verify_server_cert"]
         self._rest_url = config["base_url"].rstrip("/")
 

@@ -15,7 +15,7 @@
     "product_vendor": "Tenable",
     "product_name": "Tenable.sc",
     "product_version_regex": ".*",
-    "min_phantom_version": "5.3.0",
+    "min_phantom_version": "5.3.3",
     "python_version": "3",
     "fips_compliant": true,
     "logo": "logo_tenablesc.svg",
