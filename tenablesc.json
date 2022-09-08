@@ -1795,6 +1795,7 @@
         {
             "action": "list credentials",
             "description": "Lists the credentials available in Tenable.sc",
+            "verbose": "This action result does not contain any sensitive information like password.",
             "type": "investigate",
             "identifier": "list_credentials",
             "read_only": true,
