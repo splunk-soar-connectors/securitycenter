@@ -133,7 +133,7 @@ class SecurityCenterConnector(BaseConnector):
             self.save_progress("Getting token for session...; try #{}".format(retry))
             try:
                 r = self._session.post(
-                    "{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify
+                    "{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify, timeout=30
                 )  # nosemgrep
                 self.save_progress("Request Completed")
 
