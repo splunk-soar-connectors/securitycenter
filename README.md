@@ -2,15 +2,15 @@
 # Tenable\.sc
 
 Publisher: Splunk  
-Connector Version: 2\.2\.2  
+Connector Version: 2\.3\.0  
 Product Vendor: Tenable  
 Product Name: Tenable\.sc  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 5\.0\.0  
+Minimum Product Version: 5\.3\.3  
 
 This app integrates with Tenable's SecurityCenter to provide endpoint\-based investigative actions
 
-[comment]: # " File: readme.md"
+[comment]: # " File: README.md"
 [comment]: # "  Copyright (c) 2017-2022 Splunk Inc."
 [comment]: # "Licensed under the Apache License, Version 2.0 (the 'License');"
 [comment]: # "you may not use this file except in compliance with the License."
@@ -52,6 +52,7 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 [list repositories](#action-list-repositories) - Lists the repositories available in Tenable\.sc  
 [update asset](#action-update-asset) - Update existing asset with provided fields or create a new one as a 'static' type  
 [update group](#action-update-group) - Update existing group with provided fields  
+[list credentials](#action-list-credentials) - Lists the credentials available in Tenable\.sc  
 
 ## action: 'test connectivity'
 Validate the asset configuration for connectivity
@@ -77,14 +78,16 @@ PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 **ip\_hostname** |  required  | IP/Hostname to scan \(comma\-separated\) | string |  `ip`  `host name` 
 **scan\_policy\_id** |  required  | Tenable\.sc Scan Policy ID to use | numeric |  `tenablesc scan policy id` 
 **repository\_id** |  optional  | Tenable\.sc repository ID to use \(Default\: 1\) | numeric |  `tenablesc repository id` 
+**credential\_id** |  optional  | Tenable\.sc credential ID to use | numeric |  `tenablesc credential id` 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS
 --------- | ---- | --------
 action\_result\.status | string | 
+action\_result\.parameter\.credential\_id | numeric |  `tenablesc credential id` 
 action\_result\.parameter\.ip\_hostname | string |  `ip`  `host name` 
-action\_result\.parameter\.scan\_policy\_id | numeric |  `tenablesc scan policy id` 
 action\_result\.parameter\.repository\_id | numeric |  `tenablesc repository id` 
+action\_result\.parameter\.scan\_policy\_id | numeric |  `tenablesc scan policy id` 
 action\_result\.data\.\*\.assets | string | 
 action\_result\.data\.\*\.canManage | string | 
 action\_result\.data\.\*\.canUse | string | 
@@ -96,6 +99,8 @@ action\_result\.data\.\*\.creator\.id | string |
 action\_result\.data\.\*\.creator\.lastname | string | 
 action\_result\.data\.\*\.creator\.username | string |  `user name` 
 action\_result\.data\.\*\.credentials | string | 
+action\_result\.data\.\*\.credentials\.\*\.id | string |  `tenablesc credential id` 
+action\_result\.data\.\*\.credentials\.\*\.name | string | 
 action\_result\.data\.\*\.description | string | 
 action\_result\.data\.\*\.dhcpTracking | string | 
 action\_result\.data\.\*\.emailOnFinish | string | 
@@ -193,8 +198,8 @@ PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 DATA PATH | TYPE | CONTAINS
 --------- | ---- | --------
 action\_result\.status | string | 
-action\_result\.parameter\.ip\_hostname | string |  `ip`  `host name` 
 action\_result\.parameter\.cve\_id | string | 
+action\_result\.parameter\.ip\_hostname | string |  `ip`  `host name` 
 action\_result\.data\.\*\.endOffset | string | 
 action\_result\.data\.\*\.matchingDataElementCount | string | 
 action\_result\.data\.\*\.results\.\*\.family\.id | string | 
@@ -262,18 +267,18 @@ No parameters are required for this action
 DATA PATH | TYPE | CONTAINS
 --------- | ---- | --------
 action\_result\.status | string | 
-action\_result\.data\.\*\.id | numeric |  `tenablesc repository id` 
+action\_result\.data\.\*\.SCI\.description | string | 
 action\_result\.data\.\*\.SCI\.id | numeric | 
 action\_result\.data\.\*\.SCI\.name | string | 
-action\_result\.data\.\*\.SCI\.description | string | 
-action\_result\.data\.\*\.name | string | 
 action\_result\.data\.\*\.dataFormat | string | 
 action\_result\.data\.\*\.description | string | 
+action\_result\.data\.\*\.id | numeric |  `tenablesc repository id` 
+action\_result\.data\.\*\.name | string | 
+action\_result\.summary | string | 
+action\_result\.summary\.total\_repositories | numeric | 
 action\_result\.message | string | 
 summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric | 
-action\_result\.summary | string | 
-action\_result\.summary\.total\_repositories | numeric |   
+summary\.total\_objects\_successful | numeric |   
 
 ## action: 'update asset'
 Update existing asset with provided fields or create a new one as a 'static' type
@@ -394,6 +399,31 @@ action\_result\.data\.\*\.response\.userCount | numeric |
 action\_result\.data\.\*\.timestamp | numeric | 
 action\_result\.data\.\*\.type | string | 
 action\_result\.summary | string | 
+action\_result\.message | string | 
+summary\.total\_objects | numeric | 
+summary\.total\_objects\_successful | numeric |   
+
+## action: 'list credentials'
+Lists the credentials available in Tenable\.sc
+
+Type: **investigate**  
+Read only: **True**
+
+This action result does not contain any sensitive information like password\.
+
+#### Action Parameters
+No parameters are required for this action
+
+#### Action Output
+DATA PATH | TYPE | CONTAINS
+--------- | ---- | --------
+action\_result\.status | string | 
+action\_result\.data\.\*\.description | string | 
+action\_result\.data\.\*\.id | numeric |  `tenablesc credential id` 
+action\_result\.data\.\*\.name | string | 
+action\_result\.data\.\*\.type | string | 
+action\_result\.summary | string | 
+action\_result\.summary\.total\_credentials | numeric | 
 action\_result\.message | string | 
 summary\.total\_objects | numeric | 
 summary\.total\_objects\_successful | numeric | 
