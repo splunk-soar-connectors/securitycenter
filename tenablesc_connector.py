@@ -133,8 +133,8 @@ class SecurityCenterConnector(BaseConnector):
             self.save_progress("Getting token for session...; try #{}".format(retry))
             try:
                 r = self._session.post(
-                    "{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify
-                )  # nosemgrep
+                    "{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify, timeout=30
+                )
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
