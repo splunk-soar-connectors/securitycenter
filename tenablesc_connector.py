@@ -14,7 +14,6 @@
 # and limitations under the License.
 #
 #
-# Phantom App imports
 import datetime
 import json
 import sys
@@ -22,9 +21,8 @@ import time
 
 import phantom.app as phantom
 import phantom.utils as ph_utils
-# Imports local to this App
 import requests
-from bs4 import BeautifulSoup, UnicodeDammit
+from bs4 import BeautifulSoup
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
 
@@ -39,6 +37,7 @@ class SecurityCenterConnector(BaseConnector):
     ACTION_ID_UPDATE_ASSET = "update_asset"
     ACTION_ID_UPDATE_GROUP = "update_group"
     ACTION_ID_LIST_REPOSITORY = "list_repositories"
+    ACTION_ID_LIST_CREDENTIAL = "list_credentials"
 
     def __init__(self):
 
@@ -50,56 +49,35 @@ class SecurityCenterConnector(BaseConnector):
         self._retry_count = None
         self._retry_wait = None
 
-    def _handle_py_ver_compat_for_input_str(self, input_str, always_encode=False):
-        """
-        This method returns the encoded|original string based on the Python version.
-        :param input_str: Input string to be processed
-        :param always_encode: Used if the string needs to be encoded for python 3
-        :return: input_str (Processed input string based on following logic 'input_str - Python 3; encoded input_str - Python 2')
-        """
-
-        try:
-            if input_str and (self._python_version == 2 or always_encode):
-                input_str = UnicodeDammit(input_str).unicode_markup.encode("utf-8")
-        except Exception as ex:
-            self.debug_print(ex)
-            self.debug_print("Error occurred while handling python 2to3 compatibility for the input string")
-
-        return input_str
+    def _dump_error_log(self, error):
+        self.error_print("Exception occurred.", dump_object=error)
 
     def _get_error_message_from_exception(self, e):
-        """This method is used to get appropriate error message from the exception.
+        """
+        Get appropriate error message from the exception.
         :param e: Exception object
         :return: error message
         """
+
         error_code = TENABLE_ERR_CODE_UNAVAILABLE
         error_msg = TENABLE_ERR_MSG_UNAVAILABLE
 
         try:
-            if e.args:
+            if hasattr(e, "args"):
                 if len(e.args) > 1:
                     error_code = e.args[0]
                     error_msg = e.args[1]
                 elif len(e.args) == 1:
-                    error_code = TENABLE_ERR_CODE_UNAVAILABLE
                     error_msg = e.args[0]
-            else:
-                error_code = TENABLE_ERR_CODE_UNAVAILABLE
-                error_msg = TENABLE_ERR_MSG_UNAVAILABLE
-        except Exception as ex:
-            self.debug_print(ex)
-            error_code = TENABLE_ERR_CODE_UNAVAILABLE
-            error_msg = TENABLE_ERR_MSG_UNAVAILABLE
+        except Exception as e:
+            self.debug_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
 
-        try:
-            error_msg = self._handle_py_ver_compat_for_input_str(error_msg)
-        except TypeError:
-            error_msg = TENABLE_UNICODE_DAMMIT_TYPE_ERR_MESSAGE
-        except Exception as ex:
-            self.debug_print(ex)
-            error_msg = TENABLE_ERR_MSG_UNAVAILABLE
+        if not error_code:
+            error_text = "Error Message: {}".format(error_msg)
+        else:
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
 
-        return "Error Code: {0}. Error Message: {1}".format(error_code, error_msg)
+        return error_text
 
     def _validate_integer(self, action_result, parameter, key, allow_zero=False):
         if parameter is not None:
@@ -112,7 +90,7 @@ class SecurityCenterConnector(BaseConnector):
 
                 parameter = int(parameter)
             except Exception as ex:
-                self.debug_print(ex)
+                self._dump_error_log(ex)
                 return (
                     action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_INT.format(msg="", param=key)),
                     None,
@@ -155,8 +133,8 @@ class SecurityCenterConnector(BaseConnector):
             self.save_progress("Getting token for session...; try #{}".format(retry))
             try:
                 r = self._session.post(
-                    "{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify
-                )  # nosemgrep
+                    "{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify, timeout=30
+                )
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
@@ -193,7 +171,7 @@ class SecurityCenterConnector(BaseConnector):
             if rjson.get("error_code"):
                 error_msg = "Error: error code {}: {}".format(
                     rjson.get("error_code"),
-                    self._handle_py_ver_compat_for_input_str(rjson.get("error_msg").replace("\n", " ").strip()),
+                    rjson.get("error_msg").replace("\n", " ").strip(),
                 )
                 self.save_progress(error_msg)
                 continue
@@ -212,7 +190,7 @@ class SecurityCenterConnector(BaseConnector):
         if rjson.get("error_code"):
             error_msg = "Error: error code {}: {}".format(
                 rjson.get("error_code"),
-                self._handle_py_ver_compat_for_input_str(rjson.get("error_msg").replace("\n", " ").strip()),
+                rjson.get("error_msg").replace("\n", " ").strip(),
             )
             self.save_progress(error_msg)
 
@@ -226,16 +204,8 @@ class SecurityCenterConnector(BaseConnector):
 
         config = self.get_config()
 
-        # Fetching the Python major version
-        try:
-            self._python_version = int(sys.version_info[0])
-        except:
-            return self.set_status(
-                phantom.APP_ERROR, "Error occurred while fetching the Phantom server's Python major version"
-            )
-
         self._verify = config["verify_server_cert"]
-        self._rest_url = self._handle_py_ver_compat_for_input_str(config["base_url"].rstrip("/"))
+        self._rest_url = config["base_url"].rstrip("/")
 
         ret_val, self._retry_count = self._validate_integer(self, config.get("retry_count", 5), "Maximum attempts")
         if phantom.is_fail(ret_val):
@@ -276,7 +246,7 @@ class SecurityCenterConnector(BaseConnector):
             error_text = "Cannot parse error details"
 
         message = "Status Code: {0}. Data from server:\n{1}\n".format(
-            status_code, self._handle_py_ver_compat_for_input_str(error_text)
+            status_code, error_text
         )
 
         message = message.replace("{", "{{").replace("}", "}}")
@@ -296,7 +266,7 @@ class SecurityCenterConnector(BaseConnector):
             return phantom.APP_SUCCESS, resp_json
 
         action_result.add_data(resp_json)
-        message = self._handle_py_ver_compat_for_input_str(r.text.replace("{", "{{").replace("}", "}}"))
+        message = r.text.replace("{", "{{").replace("}", "}}")
         return (
             action_result.set_status(
                 phantom.APP_ERROR,
@@ -329,7 +299,7 @@ class SecurityCenterConnector(BaseConnector):
 
         # everything else is actually an error at this point
         message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
-            r.status_code, self._handle_py_ver_compat_for_input_str(r.text.replace("{", "{{").replace("}", "}}"))
+            r.status_code, r.text.replace("{", "{{").replace("}", "}}")
         )
 
         return action_result.set_status(phantom.APP_ERROR, message), None
@@ -395,7 +365,7 @@ class SecurityCenterConnector(BaseConnector):
             if rjson.get("error_code"):
                 error_msg = "Error: error code {}: {}".format(
                     rjson.get("error_code"),
-                    self._handle_py_ver_compat_for_input_str(rjson.get("error_msg").replace("\n", " ").strip()),
+                    rjson.get("error_msg").replace("\n", " ").strip(),
                 )
                 self.send_progress(error_msg)
                 continue
@@ -434,7 +404,7 @@ class SecurityCenterConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         # target to scan
-        ip_hostname = self._handle_py_ver_compat_for_input_str(param[IP_HOSTNAME])
+        ip_hostname = param[IP_HOSTNAME]
 
         # Clean up ip hostname
         ip_hostname = [x.strip() for x in ip_hostname.split(",")]
@@ -447,7 +417,7 @@ class SecurityCenterConnector(BaseConnector):
             if not phantom.is_hostname(ip_hostname) and not phantom.is_ip(ip_hostname):
                 return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
         except Exception as ex:
-            self.debug_print(ex)
+            self._dump_error_log(ex)
             return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
 
         ret_val, scan_policy_id = self._validate_integer(action_result, param[SCAN_POLICY], "Scan policy ID")
@@ -461,6 +431,15 @@ class SecurityCenterConnector(BaseConnector):
 
         if len(str(scan_policy_id)) > 10:
             return action_result.set_status(phantom.APP_ERROR, "Invalid Scan policy ID. Please run 'list policies' to get policy IDs.")
+
+        # Validate credential ID if one supplied
+        credential_id = param.get(CREDENTIAL_ID)
+        if credential_id:
+            ret_val, credential_id = self._validate_integer(
+                action_result, param.get(CREDENTIAL_ID, 1), "credential_id"
+            )
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
         # Calculate scan start time with a defined delay
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
@@ -479,6 +458,10 @@ class SecurityCenterConnector(BaseConnector):
             "maxScanTime": "unlimited",
         }
 
+        # Add in creds if supplied
+        if credential_id:
+            scan_data["credentials"].append({"id": credential_id})
+
         ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post")
 
         if phantom.is_fail(ret_val):
@@ -492,14 +475,14 @@ class SecurityCenterConnector(BaseConnector):
     def _list_vulnerabilities(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        list_vuln_host = self._handle_py_ver_compat_for_input_str(param.get(IP_HOSTNAME))
+        list_vuln_host = param.get(IP_HOSTNAME)
         if list_vuln_host and not ph_utils.is_ip(list_vuln_host):
             if len(list_vuln_host) > 255 or set(INVALID_HOST_CHARS).intersection(list_vuln_host):
                 return action_result.set_status(
                     phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities"
                 )
 
-        cve_id = self._handle_py_ver_compat_for_input_str(param.get("cve_id"))
+        cve_id = param.get("cve_id")
 
         if not cve_id and not list_vuln_host:
             return action_result.set_status(phantom.APP_ERROR, "Please provide either IP address/Hostname or CVE ID")
@@ -647,15 +630,15 @@ class SecurityCenterConnector(BaseConnector):
         """
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        asset_name = self._handle_py_ver_compat_for_input_str(param["asset_name"])
+        asset_name = param["asset_name"]
         try:
-            update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param["update_fields"]))
+            update_fields = self.load_dirty_json(param["update_fields"])
             if not isinstance(update_fields, dict):
                 return action_result.set_status(
                     phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields")
                 )
         except Exception as ex:
-            self.debug_print(ex)
+            self._dump_error_log(ex)
             return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
 
         endpoint = "/asset"
@@ -698,15 +681,15 @@ class SecurityCenterConnector(BaseConnector):
         """
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        group_name = self._handle_py_ver_compat_for_input_str(param["group_name"])
+        group_name = param["group_name"]
         try:
-            update_fields = self.load_dirty_json(self._handle_py_ver_compat_for_input_str(param["update_fields"]))
+            update_fields = self.load_dirty_json(param["update_fields"])
             if not isinstance(update_fields, dict):
                 return action_result.set_status(
                     phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields")
                 )
         except Exception as ex:
-            self.debug_print(ex)
+            self._dump_error_log(ex)
             return action_result.set_status(phantom.APP_ERROR, TENABLE_ERR_INVALID_JSON.format(param="update_fields"))
 
         endpoint = "/group"
@@ -732,6 +715,20 @@ class SecurityCenterConnector(BaseConnector):
         message = 'Group "{}" not found.'.format(group_name)
         return action_result.set_status(phantom.APP_ERROR, message)
 
+    def _list_credentials(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        ret_val, resp_json = self._make_rest_call("/credential", action_result)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        for credential in resp_json["response"].get("usable", []):
+            action_result.add_data(credential)
+
+        action_result.update_summary({"total_credentials": len(resp_json["response"].get("usable"))})
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
     def handle_action(self, param):
 
         ret_val = None
@@ -751,6 +748,8 @@ class SecurityCenterConnector(BaseConnector):
             ret_val = self._list_repositories(param)
         elif action_id == self.ACTION_ID_UPDATE_GROUP:
             ret_val = self._update_group(param)
+        elif action_id == self.ACTION_ID_LIST_CREDENTIAL:
+            ret_val = self._list_credentials(param)
         elif action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity()
 
