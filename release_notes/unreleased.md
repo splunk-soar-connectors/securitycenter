@@ -1,3 +1,1 @@
 **Unreleased**
-* Added new optional parameter 'credential id' for scanning with a credential [PAPP-27075]
-* Added new action 'list credentials' [PAPP-27389]
