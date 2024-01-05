@@ -1,6 +1,6 @@
 # File: tenablesc_connector.py
 #
-# Copyright (c) 2017-2022 Splunk Inc.
+# Copyright (c) 2017-2024 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ class SecurityCenterConnector(BaseConnector):
     def _dump_error_log(self, error):
         self.error_print("Exception occurred.", dump_object=error)
 
-    def _get_error_message_from_exception(self, e):
+    def _get_error_msg_from_exception(self, e):
         """
         Get appropriate error message from the exception.
         :param e: Exception object
@@ -145,7 +145,7 @@ class SecurityCenterConnector(BaseConnector):
                 return self.set_status(phantom.APP_ERROR, error_msg)
             except Exception as e:
                 self.save_progress("Request Exception")
-                error_msg = "Error: connection error with server; {}".format(self._get_error_message_from_exception(e))
+                error_msg = "Error: connection error with server; {}".format(self._get_error_msg_from_exception(e))
                 self.save_progress(error_msg)
                 continue
 
@@ -160,7 +160,7 @@ class SecurityCenterConnector(BaseConnector):
                 # print(json.dumps(rjson, indent=4))
 
             except Exception as e:
-                error_msg = self._get_error_message_from_exception(e)
+                error_msg = self._get_error_msg_from_exception(e)
                 self.debug_print("Exception: {}".format(error_msg))
 
             if len(rjson) == 0:
@@ -259,7 +259,7 @@ class SecurityCenterConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            error_msg = self._get_error_message_from_exception(e)
+            error_msg = self._get_error_msg_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, "Unable to parse response as JSON", error_msg), None
 
         if 200 <= r.status_code < 205:
@@ -315,7 +315,7 @@ class SecurityCenterConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "Unsupported method: {0}".format(method)), None
         except Exception as e:
             # Set the action_result status to error, the handler function will most probably return as is
-            error_msg = self._get_error_message_from_exception(e)
+            error_msg = self._get_error_msg_from_exception(e)
             return action_result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(error_msg)), None
 
         error_msg = None
@@ -340,7 +340,7 @@ class SecurityCenterConnector(BaseConnector):
                 return action_result.set_status(phantom.APP_ERROR, error_msg)
             except Exception as e:
                 self.save_progress("Request Exception")
-                error_msg = "Error: connection error with server; {}".format(self._get_error_message_from_exception(e))
+                error_msg = "Error: connection error with server; {}".format(self._get_error_msg_from_exception(e))
                 self.save_progress(error_msg)
                 continue
 
@@ -354,7 +354,7 @@ class SecurityCenterConnector(BaseConnector):
                 rjson = r.json()
 
             except Exception as e:
-                error_msg = self._get_error_message_from_exception(e)
+                error_msg = self._get_error_msg_from_exception(e)
                 self.debug_print("Exception: {}".format(error_msg))
 
             if len(rjson) == 0:
