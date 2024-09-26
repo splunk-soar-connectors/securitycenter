@@ -76,45 +76,112 @@
             "identifier": "scan_endpoint",
             "read_only": true,
             "parameters": {
+                "scan_name": {
+                    "description": "Title of the Tenable scan",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "contains": [],
+                    "value_list": [],
+                    "default": "",
+                    "order": 0,
+                    "name": "scan_name",
+                    "id": 1,
+                    "param_name": "scan_name"
+                },
                 "ip_hostname": {
                     "description": "IP/Hostname to scan (comma-separated)",
                     "data_type": "string",
+                    "required": true,
+                    "primary": true,
                     "contains": [
                         "ip",
                         "host name"
                     ],
-                    "primary": true,
-                    "required": true,
-                    "order": 0
+                    "value_list": [],
+                    "default": "",
+                    "order": 1,
+                    "name": "ip_hostname",
+                    "id": 2,
+                    "param_name": "ip_hostname"
                 },
                 "scan_policy_id": {
                     "description": "Tenable.sc Scan Policy ID to use",
                     "data_type": "numeric",
+                    "required": true,
+                    "primary": true,
                     "contains": [
                         "tenablesc scan policy id"
                     ],
-                    "required": true,
-                    "primary": true,
-                    "order": 1
+                    "value_list": [],
+                    "default": "",
+                    "order": 2,
+                    "name": "scan_policy_id",
+                    "id": 3,
+                    "param_name": "scan_policy_id"
                 },
                 "repository_id": {
                     "description": "Tenable.sc repository ID to use (Default: 1)",
                     "data_type": "numeric",
+                    "required": false,
+                    "primary": true,
                     "contains": [
                         "tenablesc repository id"
                     ],
-                    "default": 1,
-                    "primary": true,
-                    "order": 2
+                    "value_list": [],
+                    "default": "1",
+                    "order": 3,
+                    "name": "repository_id",
+                    "id": 4,
+                    "param_name": "repository_id"
                 },
                 "credential_id": {
                     "description": "Tenable.sc credential ID to use",
                     "data_type": "numeric",
+                    "required": false,
                     "primary": true,
                     "contains": [
                         "tenablesc credential id"
                     ],
-                    "order": 3
+                    "value_list": [],
+                    "default": "",
+                    "order": 4,
+                    "name": "credential_id",
+                    "id": 5,
+                    "param_name": "credential_id"
+                },
+                "report_id": {
+                    "description": "Tenable.sc report ID to use",
+                    "data_type": "numeric",
+                    "required": false,
+                    "primary": true,
+                    "contains": [],
+                    "value_list": [],
+                    "default": "",
+                    "order": 5,
+                    "name": "report_id",
+                    "id": 6,
+                    "param_name": "report_id"
+                },
+                "report_source": {
+                    "description": "**needs to be list***",
+                    "data_type": "string",
+                    "required": false,
+                    "primary": true,
+                    "contains": [],
+                    "value_list": [
+                        "patched",
+                        "individual",
+                        "lce",
+                        "archive",
+                        "mobile",
+                        "cumulative"
+                    ],
+                    "default": "cumulative",
+                    "order": 6,
+                    "name": "report_source",
+                    "id": 7,
+                    "param_name": "report_source"
                 }
             },
             "render": {

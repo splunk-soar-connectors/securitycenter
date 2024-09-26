@@ -402,6 +402,8 @@ class SecurityCenterConnector(BaseConnector):
     def _scan_endpoint(self, param):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
+        
+        report_name = param[SCAN_NAME]
 
         # target to scan
         ip_hostname = param[IP_HOSTNAME]
@@ -440,13 +442,23 @@ class SecurityCenterConnector(BaseConnector):
             )
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
+            
+        report_id = param.get(REPORT_ID)
+        if report_id:
+            ret_val, report_id = self._validate_integer(
+                action_result, param.get(REPORT_ID, 1), "report_id"
+            )
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+        
+        report_source = param[REPORT_SOURCE]
 
         # Calculate scan start time with a defined delay
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
         scan_start = scan_start.strftime(DATETIME_FORMAT)
         # can probably remove some of these options
         scan_data = {
-            "name": "Scan Launched from Phantom",
+            "name": report_name,
             "repository": {"id": scan_repository_id},
             "schedule": {"start": scan_start, "repeatRule": "FREQ=NOW;INTERVAL=1", "type": "now"},
             "reports": [],
@@ -461,6 +473,9 @@ class SecurityCenterConnector(BaseConnector):
         # Add in creds if supplied
         if credential_id:
             scan_data["credentials"].append({"id": credential_id})
+            
+        if report_id:
+            scan_data["reports"].append({"id" : report_id, "reportSource" : report_source})
 
         ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post")
 
