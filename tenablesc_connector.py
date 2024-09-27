@@ -403,7 +403,7 @@ class SecurityCenterConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
         
-        report_name = param[SCAN_NAME]
+        scan_name = param[SCAN_NAME]
 
         # target to scan
         ip_hostname = param[IP_HOSTNAME]
@@ -458,7 +458,7 @@ class SecurityCenterConnector(BaseConnector):
         scan_start = scan_start.strftime(DATETIME_FORMAT)
         # can probably remove some of these options
         scan_data = {
-            "name": report_name,
+            "name": scan_name,
             "repository": {"id": scan_repository_id},
             "schedule": {"start": scan_start, "repeatRule": "FREQ=NOW;INTERVAL=1", "type": "now"},
             "reports": [],
