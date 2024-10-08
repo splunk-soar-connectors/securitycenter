@@ -402,7 +402,7 @@ class SecurityCenterConnector(BaseConnector):
     def _scan_endpoint(self, param):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
-        
+
         scan_name = param[SCAN_NAME]
 
         # target to scan
@@ -442,7 +442,7 @@ class SecurityCenterConnector(BaseConnector):
             )
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
-            
+
         report_id = param.get(REPORT_ID)
         if report_id:
             ret_val, report_id = self._validate_integer(
@@ -450,7 +450,7 @@ class SecurityCenterConnector(BaseConnector):
             )
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
-        
+
         report_source = param[REPORT_SOURCE]
 
         # Calculate scan start time with a defined delay
@@ -473,7 +473,7 @@ class SecurityCenterConnector(BaseConnector):
         # Add in creds if supplied
         if credential_id:
             scan_data["credentials"].append({"id": credential_id})
-            
+
         if report_id:
             scan_data["reports"].append({"id" : report_id, "reportSource" : report_source})
 
