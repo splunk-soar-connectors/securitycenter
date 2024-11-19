@@ -116,7 +116,7 @@
                 "credential_id": {
                     "description": "Credential ID of the Tenable scan",
                     "data_type": "numeric",
-                    "primary":true,
+                    "primary": true,
                     "contains": [
                         "tenablesc credential id"
                     ],
@@ -1914,16 +1914,7 @@
         }
     ],
     "pip_dependencies": {
-        "wheel": [
-            {
-                "module": "beautifulsoup4",
-                "input_file": "wheels/py3/beautifulsoup4-4.9.1-py3-none-any.whl"
-            },
-            {
-                "module": "soupsieve",
-                "input_file": "wheels/py3/soupsieve-2.3.2.post1-py3-none-any.whl"
-            }
-        ]
+        "wheel": []
     },
     "pip39_dependencies": {
         "wheel": [
