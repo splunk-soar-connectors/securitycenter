@@ -451,7 +451,7 @@ class SecurityCenterConnector(BaseConnector):
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
 
-        report_source = param[REPORT_SOURCE]
+        report_source = param.get(REPORT_SOURCE, "cumulative")
 
         # Calculate scan start time with a defined delay
         scan_start = datetime.datetime.utcnow() + datetime.timedelta(minutes=SCAN_DELAY)
@@ -475,7 +475,7 @@ class SecurityCenterConnector(BaseConnector):
             scan_data["credentials"].append({"id": credential_id})
 
         if report_id:
-            scan_data["reports"].append({"id" : report_id, "reportSource" : report_source})
+            scan_data["reports"].append({"id": report_id, "reportSource": report_source})
 
         ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post")
 
