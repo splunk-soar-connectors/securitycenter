@@ -77,9 +77,9 @@
             "read_only": true,
             "parameters": {
                 "scan_name": {
+                    "default": "Scan launched from Splunk SOAR",
                     "description": "Title of the Tenable scan",
                     "data_type": "string",
-                    "required": true,
                     "order": 0
                 },
                 "ip_hostname": {
