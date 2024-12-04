@@ -75,10 +75,13 @@ Read only: **True**
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
+**scan_name** |  required  | Name of the scan | string |  
 **ip_hostname** |  required  | IP/Hostname to scan (comma-separated) | string |  `ip`  `host name` 
 **scan_policy_id** |  required  | Tenable.sc Scan Policy ID to use | numeric |  `tenablesc scan policy id` 
 **repository_id** |  optional  | Tenable.sc repository ID to use (Default: 1) | numeric |  `tenablesc repository id` 
 **credential_id** |  optional  | Tenable.sc credential ID to use | numeric |  `tenablesc credential id` 
+**report_id** |  optional  | Tenable.sc report ID to use | numeric |  `tenablesc report id` 
+**report_source** |  optional  | Tenable.sc report source to use (Default: cumulative) | string |  `tenablesc report id` 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES

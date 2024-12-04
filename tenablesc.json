@@ -7,7 +7,7 @@
     "type": "network security",
     "license": "Copyright (c) 2017-2024 Splunk Inc.",
     "main_module": "tenablesc_connector.py",
-    "app_version": "2.3.1",
+    "app_version": "2.3.2",
     "latest_tested_versions": [
         "On-premise v5.15.0"
     ],
@@ -15,7 +15,7 @@
     "product_vendor": "Tenable",
     "product_name": "Tenable.sc",
     "product_version_regex": ".*",
-    "min_phantom_version": "5.3.3",
+    "min_phantom_version": "6.3.0",
     "python_version": "3",
     "fips_compliant": true,
     "logo": "logo_tenablesc.svg",
@@ -76,45 +76,70 @@
             "identifier": "scan_endpoint",
             "read_only": true,
             "parameters": {
+                "scan_name": {
+                    "default": "Scan launched from Splunk SOAR",
+                    "description": "Title of the Tenable scan",
+                    "data_type": "string",
+                    "order": 0
+                },
                 "ip_hostname": {
                     "description": "IP/Hostname to scan (comma-separated)",
                     "data_type": "string",
+                    "required": true,
+                    "primary": true,
                     "contains": [
                         "ip",
                         "host name"
                     ],
-                    "primary": true,
-                    "required": true,
-                    "order": 0
+                    "order": 1
                 },
                 "scan_policy_id": {
-                    "description": "Tenable.sc Scan Policy ID to use",
+                    "description": "Scan Policy ID of the Tenable scan",
                     "data_type": "numeric",
+                    "required": true,
+                    "primary": true,
                     "contains": [
                         "tenablesc scan policy id"
                     ],
-                    "required": true,
-                    "primary": true,
-                    "order": 1
+                    "order": 2
                 },
                 "repository_id": {
-                    "description": "Tenable.sc repository ID to use (Default: 1)",
+                    "description": "Repository ID of the Tenable scan",
                     "data_type": "numeric",
+                    "primary": true,
                     "contains": [
                         "tenablesc repository id"
                     ],
-                    "default": 1,
-                    "primary": true,
-                    "order": 2
+                    "default": "1",
+                    "order": 3
                 },
                 "credential_id": {
-                    "description": "Tenable.sc credential ID to use",
+                    "description": "Credential ID of the Tenable scan",
                     "data_type": "numeric",
                     "primary": true,
                     "contains": [
                         "tenablesc credential id"
                     ],
-                    "order": 3
+                    "order": 4
+                },
+                "report_id": {
+                    "description": "Report ID of the Tenable scan",
+                    "data_type": "numeric",
+                    "order": 5
+                },
+                "report_source": {
+                    "description": "Resource from which to fetch report",
+                    "data_type": "string",
+                    "value_list": [
+                        "patched",
+                        "individual",
+                        "lce",
+                        "archive",
+                        "mobile",
+                        "cumulative"
+                    ],
+                    "default": "cumulative",
+                    "order": 6
                 }
             },
             "render": {
@@ -1889,16 +1914,7 @@
         }
     ],
     "pip_dependencies": {
-        "wheel": [
-            {
-                "module": "beautifulsoup4",
-                "input_file": "wheels/py3/beautifulsoup4-4.9.1-py3-none-any.whl"
-            },
-            {
-                "module": "soupsieve",
-                "input_file": "wheels/py3/soupsieve-2.3.2.post1-py3-none-any.whl"
-            }
-        ]
+        "wheel": []
     },
     "pip39_dependencies": {
         "wheel": [
