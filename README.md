@@ -2,11 +2,11 @@
 # Tenable.sc
 
 Publisher: Splunk  
-Connector Version: 2.3.1  
+Connector Version: 2.3.2  
 Product Vendor: Tenable  
 Product Name: Tenable.sc  
 Product Version Supported (regex): ".\*"  
-Minimum Product Version: 5.3.3  
+Minimum Product Version: 6.3.0  
 
 This app integrates with Tenable's SecurityCenter to provide endpoint-based investigative actions
 
@@ -75,13 +75,13 @@ Read only: **True**
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**scan_name** |  required  | Name of the scan | string |  
+**scan_name** |  optional  | Title of the Tenable scan | string | 
 **ip_hostname** |  required  | IP/Hostname to scan (comma-separated) | string |  `ip`  `host name` 
-**scan_policy_id** |  required  | Tenable.sc Scan Policy ID to use | numeric |  `tenablesc scan policy id` 
-**repository_id** |  optional  | Tenable.sc repository ID to use (Default: 1) | numeric |  `tenablesc repository id` 
-**credential_id** |  optional  | Tenable.sc credential ID to use | numeric |  `tenablesc credential id` 
-**report_id** |  optional  | Tenable.sc report ID to use | numeric |  `tenablesc report id` 
-**report_source** |  optional  | Tenable.sc report source to use (Default: cumulative) | string |  `tenablesc report id` 
+**scan_policy_id** |  required  | Scan Policy ID of the Tenable scan | numeric |  `tenablesc scan policy id` 
+**repository_id** |  optional  | Repository ID of the Tenable scan | numeric |  `tenablesc repository id` 
+**credential_id** |  optional  | Credential ID of the Tenable scan | numeric |  `tenablesc credential id` 
+**report_id** |  optional  | Report ID of the Tenable scan | numeric | 
+**report_source** |  optional  | Resource from which to fetch report | string | 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
