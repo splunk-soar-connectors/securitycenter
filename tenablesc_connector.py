@@ -393,7 +393,7 @@ class SecurityCenterConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        scan_name = param[SCAN_NAME]
+        scan_name = param.get(SCAN_NAME)
 
         # target to scan
         ip_hostname = param[IP_HOSTNAME]
