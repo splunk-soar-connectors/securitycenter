@@ -5,7 +5,7 @@
     "publisher": "Splunk",
     "package_name": "phantom_tenablesc",
     "type": "network security",
-    "license": "Copyright (c) 2017-2024 Splunk Inc.",
+    "license": "Copyright (c) 2017-2025 Splunk Inc.",
     "main_module": "tenablesc_connector.py",
     "app_version": "2.3.2",
     "latest_tested_versions": [
@@ -1912,20 +1912,5 @@
             ],
             "versions": "EQ(*)"
         }
-    ],
-    "pip_dependencies": {
-        "wheel": []
-    },
-    "pip39_dependencies": {
-        "wheel": [
-            {
-                "module": "beautifulsoup4",
-                "input_file": "wheels/py3/beautifulsoup4-4.9.1-py3-none-any.whl"
-            },
-            {
-                "module": "soupsieve",
-                "input_file": "wheels/py3/soupsieve-2.5-py3-none-any.whl"
-            }
-        ]
-    }
+    ]
 }
