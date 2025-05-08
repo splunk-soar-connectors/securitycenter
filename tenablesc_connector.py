@@ -38,6 +38,7 @@ class SecurityCenterConnector(BaseConnector):
     ACTION_ID_UPDATE_GROUP = "update_group"
     ACTION_ID_LIST_REPOSITORY = "list_repositories"
     ACTION_ID_LIST_CREDENTIAL = "list_credentials"
+    ACTION_ID_LIST_SCANS = "list_scans"
 
     def __init__(self):
 
@@ -721,6 +722,20 @@ class SecurityCenterConnector(BaseConnector):
         action_result.update_summary({"total_credentials": len(resp_json["response"].get("usable"))})
 
         return action_result.set_status(phantom.APP_SUCCESS)
+    
+    def _list_scans(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        ret_val, resp_json = self._make_rest_call("/scanResult", action_result)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        for credential in resp_json["response"].get("usable", []):
+            action_result.add_data(credential)
+
+        action_result.update_summary({"total_scans": len(resp_json["response"].get("usable"))})
+
+        return action_result.set_status(phantom.APP_SUCCESS)
 
     def handle_action(self, param):
 
@@ -743,6 +758,8 @@ class SecurityCenterConnector(BaseConnector):
             ret_val = self._update_group(param)
         elif action_id == self.ACTION_ID_LIST_CREDENTIAL:
             ret_val = self._list_credentials(param)
+        elif action_id == self.ACTION_ID_LIST_SCANS:
+            ret_val = self._list_scans(param)
         elif action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity()
 
