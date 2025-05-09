@@ -41,9 +41,8 @@ class SecurityCenterConnector(BaseConnector):
     ACTION_ID_LIST_SCANS = "list_scans"
 
     def __init__(self):
-
         # Call the BaseConnectors init first
-        super(SecurityCenterConnector, self).__init__()
+        super().__init__()
         self._verify = None
         self._good_token = None
         self._rest_url = None
@@ -71,12 +70,12 @@ class SecurityCenterConnector(BaseConnector):
                 elif len(e.args) == 1:
                     error_msg = e.args[0]
         except Exception as e:
-            self.debug_print("Error occurred while fetching exception information. Details: {}".format(str(e)))
+            self.debug_print(f"Error occurred while fetching exception information. Details: {e!s}")
 
         if not error_code:
-            error_text = "Error Message: {}".format(error_msg)
+            error_text = f"Error Message: {error_msg}"
         else:
-            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
+            error_text = f"Error Code: {error_code}. Error Message: {error_msg}"
 
         return error_text
 
@@ -111,36 +110,34 @@ class SecurityCenterConnector(BaseConnector):
         return phantom.APP_SUCCESS, parameter
 
     def _get_token(self):
-
         config = self.get_config()
 
         rjson = {}
         error_msg = None
         for retry in range(1, self._retry_count + 1):
-
             self._session = requests.Session()  # nosemgrep
             self._session.headers = {"Content-type": "application/json", "accept": "application/json"}
             auth_data = {"username": config["username"], "password": config["password"]}
 
             if retry > 1:
                 self.save_progress("Failed.")
-                self.save_progress("Waiting for {} seconds until retry".format(self._retry_wait))
+                self.save_progress(f"Waiting for {self._retry_wait} seconds until retry")
                 time.sleep(self._retry_wait)
 
-            self.save_progress("Getting token for session...; try #{}".format(retry))
+            self.save_progress(f"Getting token for session...; try #{retry}")
             try:
                 r = self._session.post("{}{}".format(self._rest_url, "/rest/token"), json=auth_data, verify=self._verify, timeout=30)
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
-                error_msg = "Error Connecting to server. No Connection adapter were found for %s" % (self._rest_url)
+                error_msg = f"Error Connecting to server. No Connection adapter were found for {self._rest_url}"
                 return self.set_status(phantom.APP_ERROR, error_msg)
             except requests.exceptions.InvalidURL:
-                error_msg = "Error connecting to server. Invalid url %s" % (self._rest_url)
+                error_msg = f"Error connecting to server. Invalid url {self._rest_url}"
                 return self.set_status(phantom.APP_ERROR, error_msg)
             except Exception as e:
                 self.save_progress("Request Exception")
-                error_msg = "Error: connection error with server; {}".format(self._get_error_msg_from_exception(e))
+                error_msg = f"Error: connection error with server; {self._get_error_msg_from_exception(e)}"
                 self.save_progress(error_msg)
                 continue
 
@@ -156,7 +153,7 @@ class SecurityCenterConnector(BaseConnector):
 
             except Exception as e:
                 error_msg = self._get_error_msg_from_exception(e)
-                self.debug_print("Exception: {}".format(error_msg))
+                self.debug_print(f"Exception: {error_msg}")
 
             if len(rjson) == 0:
                 error_msg = "Error: response not json compliant"
@@ -189,10 +186,9 @@ class SecurityCenterConnector(BaseConnector):
             )
             self.save_progress(error_msg)
 
-        return self.set_status(phantom.APP_ERROR, "Error: Exceeded number of retries to get token; {}".format(error_msg))
+        return self.set_status(phantom.APP_ERROR, f"Error: Exceeded number of retries to get token; {error_msg}")
 
     def initialize(self):
-
         self._good_token = False
 
         config = self.get_config()
@@ -216,7 +212,6 @@ class SecurityCenterConnector(BaseConnector):
         return phantom.APP_SUCCESS
 
     def finalize(self):
-
         # Logout
         ret_val = phantom.APP_SUCCESS
         if self._good_token:
@@ -224,7 +219,6 @@ class SecurityCenterConnector(BaseConnector):
         return ret_val
 
     def _process_html_response(self, response, action_result):
-
         # An html response, is bound to be an error
         status_code = response.status_code
 
@@ -238,14 +232,13 @@ class SecurityCenterConnector(BaseConnector):
             self.debug_print(ex)
             error_text = "Cannot parse error details"
 
-        message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code, error_text)
+        message = f"Status Code: {status_code}. Data from server:\n{error_text}\n"
 
         message = message.replace("{", "{{").replace("}", "}}")
 
         return action_result.set_status(phantom.APP_ERROR, message), None
 
     def _process_json_response(self, r, action_result):
-
         # Try a json parse
         try:
             resp_json = r.json()
@@ -261,13 +254,12 @@ class SecurityCenterConnector(BaseConnector):
         return (
             action_result.set_status(
                 phantom.APP_ERROR,
-                "Error from server, Status Code: {0} data returned: {1}".format(r.status_code, message),
+                f"Error from server, Status Code: {r.status_code} data returned: {message}",
             ),
             resp_json,
         )
 
     def _process_response(self, r, action_result):
-
         # store the r_text in debug data, it will get dumped in the logs if an error occurs
         if hasattr(action_result, "add_debug_data"):
             if r is not None:
@@ -289,49 +281,47 @@ class SecurityCenterConnector(BaseConnector):
         #   return self._process_empty_reponse(r, action_result)
 
         # everything else is actually an error at this point
-        message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
+        message = "Can't process response from server. Status Code: {} Data from server: {}".format(
             r.status_code, r.text.replace("{", "{{").replace("}", "}}")
         )
 
         return action_result.set_status(phantom.APP_ERROR, message), None
 
     def _make_rest_call(self, endpoint, action_result, params={}, json={}, method="get"):
-
-        url = "{0}/rest{1}".format(self._rest_url, endpoint)
+        url = f"{self._rest_url}/rest{endpoint}"
 
         try:
             request_func = getattr(self._session, method)
         except AttributeError:
             # Set the action_result status to error, the handler function will most probably return as is
-            return action_result.set_status(phantom.APP_ERROR, "Unsupported method: {0}".format(method)), None
+            return action_result.set_status(phantom.APP_ERROR, f"Unsupported method: {method}"), None
         except Exception as e:
             # Set the action_result status to error, the handler function will most probably return as is
             error_msg = self._get_error_msg_from_exception(e)
-            return action_result.set_status(phantom.APP_ERROR, "Handled exception: {0}".format(error_msg)), None
+            return action_result.set_status(phantom.APP_ERROR, f"Handled exception: {error_msg}"), None
 
         error_msg = None
         for retry in range(1, self._retry_count + 1):
-
             if retry > 1:
                 self.save_progress("Failed.")
-                self.save_progress("Waiting for {} seconds until retry".format(self._retry_wait))
+                self.save_progress(f"Waiting for {self._retry_wait} seconds until retry")
                 time.sleep(self._retry_wait)
 
-            self.save_progress("Making REST call...; try #{}".format(retry))
+            self.save_progress(f"Making REST call...; try #{retry}")
             r = None
             try:
                 r = request_func(url, params=params, json=json, verify=self._verify)  # nosemgrep
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
-                error_msg = "Error Connecting to server. No Connection adapter were found for %s" % (url)
+                error_msg = f"Error Connecting to server. No Connection adapter were found for {url}"
                 return action_result.set_status(phantom.APP_ERROR, error_msg)
             except requests.exceptions.InvalidURL:
-                error_msg = "Error connecting to server. Invalid url %s" % (url)
+                error_msg = f"Error connecting to server. Invalid url {url}"
                 return action_result.set_status(phantom.APP_ERROR, error_msg)
             except Exception as e:
                 self.save_progress("Request Exception")
-                error_msg = "Error: connection error with server; {}".format(self._get_error_msg_from_exception(e))
+                error_msg = f"Error: connection error with server; {self._get_error_msg_from_exception(e)}"
                 self.save_progress(error_msg)
                 continue
 
@@ -346,7 +336,7 @@ class SecurityCenterConnector(BaseConnector):
 
             except Exception as e:
                 error_msg = self._get_error_msg_from_exception(e)
-                self.debug_print("Exception: {}".format(error_msg))
+                self.debug_print(f"Exception: {error_msg}")
 
             if len(rjson) == 0:
                 error_msg = "Error: response not json compliant"
@@ -363,8 +353,8 @@ class SecurityCenterConnector(BaseConnector):
 
             return self._process_response(r, action_result)
 
-        self.save_progress("Error: Failed to make REST call; {}".format(error_msg))
-        return action_result.set_status(phantom.APP_ERROR, "REST API to server failed: {}".format(error_msg)), None
+        self.save_progress(f"Error: Failed to make REST call; {error_msg}")
+        return action_result.set_status(phantom.APP_ERROR, f"REST API to server failed: {error_msg}"), None
 
     def load_dirty_json(self, dirty_json):
         import re
@@ -381,7 +371,6 @@ class SecurityCenterConnector(BaseConnector):
         return clean_json
 
     def _test_connectivity(self):
-
         self.save_progress("Checking connectivity to your Tenable.sc instance...")
         ret_val, resp_json = self._make_rest_call("/user", self)
         if phantom.is_fail(ret_val):
@@ -391,7 +380,6 @@ class SecurityCenterConnector(BaseConnector):
             return self.set_status_save_progress(phantom.APP_SUCCESS, "Connectivity to Tenable.sc was successful.")
 
     def _scan_endpoint(self, param):
-
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         scan_name = param.get(SCAN_NAME)
@@ -706,7 +694,7 @@ class SecurityCenterConnector(BaseConnector):
                 return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated group.")
 
         # Group does not exist
-        message = 'Group "{}" not found.'.format(group_name)
+        message = f'Group "{group_name}" not found.'
         return action_result.set_status(phantom.APP_ERROR, message)
 
     def _list_credentials(self, param):
@@ -738,7 +726,6 @@ class SecurityCenterConnector(BaseConnector):
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def handle_action(self, param):
-
         ret_val = None
 
         # Get the action that we are supposed to execute for this App Run
@@ -767,7 +754,6 @@ class SecurityCenterConnector(BaseConnector):
 
 
 if __name__ == "__main__":
-
     import pudb
 
     # Breakpoint at runtime

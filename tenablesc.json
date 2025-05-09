@@ -736,6 +736,18 @@
                     "example_values": [
                         1
                     ]
+                },
+                {
+                    "data_path": "action_result.parameter.scan_name",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.parameter.report_id",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.parameter.report_source",
+                    "data_type": "string"
                 }
             ],
             "versions": "EQ(*)"

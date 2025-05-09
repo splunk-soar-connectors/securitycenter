@@ -176,6 +176,9 @@ action_result.summary.name | string | | Scan Launched |
 action_result.message | string | | Name: Scan Launched |
 summary.total_objects | numeric | | 1 |
 summary.total_objects_successful | numeric | | 1 |
+action_result.parameter.scan_name | string | | |
+action_result.parameter.report_id | numeric | | |
+action_result.parameter.report_source | string | | |
 
 ## action: 'list vulnerabilities'
 
