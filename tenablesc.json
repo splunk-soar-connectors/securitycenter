@@ -2054,14 +2054,14 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.description",
+                    "data_path": "action_result.data.*.description",
                     "data_type": "string",
                     "example_values": [
                         "Description"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.id",
+                    "data_path": "action_result.data.*.id",
                     "data_type": "numeric",
                     "column_name": "ID",
                     "column_order": 0,
@@ -2073,7 +2073,7 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.name",
+                    "data_path": "action_result.data.*.name",
                     "data_type": "string",
                     "column_name": "Name",
                     "column_order": 1,
@@ -2082,7 +2082,7 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.status",
+                    "data_path": "action_result.data.*.status",
                     "data_type": "string",
                     "column_name": "Status",
                     "column_order": 2,
@@ -2091,35 +2091,35 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.details",
+                    "data_path": "action_result.data.*.details",
                     "data_type": "string",
                     "example_values": [
                         "Scan Policy"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.importStatus",
+                    "data_path": "action_result.data.*.importStatus",
                     "data_type": "string",
                     "example_values": [
                         "Finished"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.dataFormat",
+                    "data_path": "action_result.data.*.dataFormat",
                     "data_type": "string",
                     "example_values": [
                         "universal"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.resultType",
+                    "data_path": "action_result.data.*.resultType",
                     "data_type": "string",
                     "example_values": [
                         "active"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.running",
+                    "data_path": "action_result.data.*.running",
                     "data_type": "string",
                     "example_values": [
                         "false"
@@ -2127,39 +2127,39 @@
                 },
                 
                 {
-                    "data_path": "action_result.data.errorDetails",
+                    "data_path": "action_result.data.*.errorDetails",
                     "data_type": "string"
                 },
                 {
-                    "data_path": "action_result.data.totalIPs",
+                    "data_path": "action_result.data.*.totalIPs",
                     "data_type": "numeric",
                     "example_values": [
                         1
                     ]
                 },
                 {
-                    "data_path": "action_result.data.completedIPs",
+                    "data_path": "action_result.data.*.completedIPs",
                     "data_type": "numeric",
                     "example_values": [
                         1
                     ]
                 },
                 {
-                    "data_path": "action_result.data.scannedIPs",
+                    "data_path": "action_result.data.*.scannedIPs",
                     "data_type": "numeric",
                     "example_values": [
                         1
                     ]
                 },
                 {
-                    "data_path": "action_result.data.agentScanUUID",
+                    "data_path": "action_result.data.*.agentScanUUID",
                     "data_type": "string",
                     "example_values": [
                         "12345678-9abc-4ef0-9234-56789abcdef0"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.startTime",
+                    "data_path": "action_result.data.*.startTime",
                     "data_type": "numeric",
                     "column_name": "Start Time",
                     "column_order": 3,
@@ -2168,7 +2168,7 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.finishTime",
+                    "data_path": "action_result.data.*.finishTime",
                     "data_type": "numeric",
                     "column_name": "Finish Time",
                     "column_order": 4,
@@ -2177,28 +2177,28 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.scanDuration",
+                    "data_path": "action_result.data.*.scanDuration",
                     "data_type": "numeric",
                     "example_values": [
                         487
                     ]
                 },
                 {
-                    "data_path": "action_result.data.completedChecks",
+                    "data_path": "action_result.data.*.completedChecks",
                     "data_type": "numeric",
                     "example_values": [
                         198995
                     ]
                 },
                 {
-                    "data_path": "action_result.data.totalChecks",
+                    "data_path": "action_result.data.*.totalChecks",
                     "data_type": "numeric",
                     "example_values": [
                         198995
                     ]
                 },
                 {
-                    "data_path": "action_result.data.progress.scanningIPs",
+                    "data_path": "action_result.data.*.progress.scanningIPs",
                     "data_type": "string",
                     "column_name": "Scanning IPs",
                     "column_order": 5,
@@ -2207,7 +2207,7 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.progress.scannedIPs",
+                    "data_path": "action_result.data.*.progress.scannedIPs",
                     "data_type": "string",
                     "column_name": "Scanned IPs",
                     "column_order": 6,
@@ -2216,7 +2216,7 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.data.progress.deadHostIPs",
+                    "data_path": "action_result.data.*.progress.deadHostIPs",
                     "data_type": "string",
                     "column_name": "Dead Host IPs",
                     "column_order": 7,
