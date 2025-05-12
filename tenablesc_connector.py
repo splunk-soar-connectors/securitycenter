@@ -739,7 +739,7 @@ class SecurityCenterConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        action_result.add_data(resp_json)
+        action_result.add_data(resp_json["response"])
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
