@@ -715,7 +715,27 @@ class SecurityCenterConnector(BaseConnector):
     def _list_scans(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        ret_val, resp_json = self._make_rest_call("/scanResult?fields=name,description,status,startTime,finishTime", action_result)
+        earliest_time = param.get(EARLIEST_TIME)
+        if earliest_time:
+            ret_val, earliest_time = self._validate_integer(action_result, param.get(EARLIEST_TIME, 1), "earliest_time")
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+            earliest_time = time() - (earliest_time * 60)
+
+        latest_time = param.get(LATEST_TIME)
+        if latest_time:
+            ret_val, latest_time = self._validate_integer(action_result, param.get(LATEST_TIME, 1), "latest_time")
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+            latest_time = time() - (latest_time * 60)
+
+        params = {
+            "startTime" : earliest_time,
+            "endTime" : latest_time,
+            "fields" : "name,description,status,startTime,finishTime"
+        }
+
+        ret_val, resp_json = self._make_rest_call("/scanResult", action_result, params=params)
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 

@@ -1931,7 +1931,20 @@
             "type": "investigate",
             "identifier": "list_scans",
             "read_only": true,
-            "parameters": {},
+            "parameters": {
+                "earliest_time": {
+                    "description": "Number of minutes from now",
+                    "data_type": "numeric",
+                    "required": false,
+                    "order": 0
+                },
+                "latest_time": {
+                    "description": "Number of minutes from now. Leave blank for current time",
+                    "data_type": "numeric",
+                    "required": false,
+                    "order": 1
+                }
+            },
             "render": {
                 "width": 12,
                 "title": "Tenable.sc Scans",
