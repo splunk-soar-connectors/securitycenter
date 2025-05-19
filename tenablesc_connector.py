@@ -715,7 +715,7 @@ class SecurityCenterConnector(BaseConnector):
     def _list_scans(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        ret_val, resp_json = self._make_rest_call("/scanResult", action_result)
+        ret_val, resp_json = self._make_rest_call("/scanResult?fields=name,description,status,startTime,finishTime", action_result)
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 

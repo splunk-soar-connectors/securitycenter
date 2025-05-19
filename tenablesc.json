@@ -1985,6 +1985,24 @@
                     ]
                 },
                 {
+                    "data_path": "action_result.data.*.startTime",
+                    "data_type": "numeric",
+                    "column_name": "Start Time",
+                    "column_order": 3,
+                    "example_values": [
+                        "1746535301"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.finishTime",
+                    "data_type": "numeric",
+                    "column_name": "Finish Time",
+                    "column_order": 4,
+                    "example_values": [
+                        "1746535301"
+                    ]
+                },
+                {
                     "data_path": "action_result.summary",
                     "data_type": "string"
                 },
