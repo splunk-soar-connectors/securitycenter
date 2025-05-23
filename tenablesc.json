@@ -2171,7 +2171,6 @@
                         "false"
                     ]
                 },
-                
                 {
                     "data_path": "action_result.data.*.errorDetails",
                     "data_type": "string"

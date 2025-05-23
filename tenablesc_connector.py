@@ -711,7 +711,7 @@ class SecurityCenterConnector(BaseConnector):
         action_result.update_summary({"total_credentials": len(resp_json["response"].get("usable"))})
 
         return action_result.set_status(phantom.APP_SUCCESS)
-    
+
     def _list_scans(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
@@ -745,14 +745,14 @@ class SecurityCenterConnector(BaseConnector):
         action_result.update_summary({"total_scans": len(resp_json["response"].get("usable"))})
 
         return action_result.set_status(phantom.APP_SUCCESS)
-    
+
     def _scan_information(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         ret_val, scan_id = self._validate_integer(action_result, param[SCAN_ID], "Scan ID")
         if phantom.is_fail(ret_val):
             return action_result.get_status()
-        
+
         endpoint = "{}/{}".format("/scanResult", scan_id)
 
         ret_val, resp_json = self._make_rest_call(endpoint, action_result)
