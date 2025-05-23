@@ -720,14 +720,14 @@ class SecurityCenterConnector(BaseConnector):
             ret_val, earliest_time = self._validate_integer(action_result, param.get(EARLIEST_TIME, 1), "earliest_time")
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
-            earliest_time = time() - (earliest_time * 60)
+            earliest_time = time.time() - (earliest_time * 60)
 
         latest_time = param.get(LATEST_TIME)
         if latest_time:
             ret_val, latest_time = self._validate_integer(action_result, param.get(LATEST_TIME, 1), "latest_time")
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
-            latest_time = time() - (latest_time * 60)
+            latest_time = time.time() - (latest_time * 60)
 
         params = {
             "startTime" : earliest_time,
