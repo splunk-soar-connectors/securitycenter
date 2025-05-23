@@ -1961,6 +1961,14 @@
                     ]
                 },
                 {
+                    "data_path": "action_result.parameter.earliest_time",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.parameter.latest_time",
+                    "data_type": "numeric"
+                },
+                {
                     "data_path": "action_result.data.*.description",
                     "data_type": "string",
                     "example_values": [
@@ -2082,6 +2090,13 @@
                     "example_values": [
                         "success",
                         "failed"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.scan_id",
+                    "data_type": "numeric",
+                    "contains": [
+                        "tenablesc scan id"
                     ]
                 },
                 {
