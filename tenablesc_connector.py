@@ -729,11 +729,7 @@ class SecurityCenterConnector(BaseConnector):
                 return action_result.get_status()
             latest_time = time.time() - (latest_time * 60)
 
-        params = {
-            "startTime" : earliest_time,
-            "endTime" : latest_time,
-            "fields" : "name,description,status,startTime,finishTime"
-        }
+        params = {"startTime": earliest_time, "endTime": latest_time, "fields": "name,description,status,startTime,finishTime"}
 
         ret_val, resp_json = self._make_rest_call("/scanResult", action_result, params=params)
         if phantom.is_fail(ret_val):

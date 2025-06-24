@@ -41,8 +41,8 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 [update asset](#action-update-asset) - Update existing asset with provided fields or create a new one as a 'static' type \
 [update group](#action-update-group) - Update existing group with provided fields \
 [list credentials](#action-list-credentials) - Lists the credentials available in Tenable.sc \
-[list scans](#action-list-scans) - List Scan Results available in Tenable.sc \
-[scan information](#action-scan-information) - Get the scan information from scans in Scan Results available in Tenable.sc
+[list scans](#action-list-scans) - Lists the scan results in Tenable.sc \
+[scan information](#action-scan-information) - Gets the information of a scan in Tenable.sc
 
 ## action: 'test connectivity'
 
@@ -450,55 +450,62 @@ summary.total_objects_successful | numeric | | 1 |
 
 ## action: 'list scans'
 
-Query Tenable.sc for a list of scans in scan results
+Lists the scan results in Tenable.sc
 
 Type: **investigate** \
 Read only: **True**
+
+This action result does not contain any sensitive information like password.
 
 #### Action Parameters
 
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**earliest_time** | optional | Filter by scan creation time. Number of minutes from now | numeric | |
-**latest_time** | optional | Filter by scan creation time. Number of minutes from now. Leave blank for current time | numeric | |
+**earliest_time** | optional | Number of minutes from now | numeric | |
+**latest_time** | optional | Number of minutes from now. Leave blank for current time | numeric | |
 
 #### Action Output
 
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
 action_result.status | string | | success failed |
-action_result.data.\*.description | string | | |
-action_result.data.\*.id | numeric | | 1 |
+action_result.parameter.earliest_time | numeric | | |
+action_result.parameter.latest_time | numeric | | |
+action_result.data.\*.description | string | | Description |
+action_result.data.\*.id | numeric | `tenablesc scan id` | 1 |
 action_result.data.\*.name | string | | Server Scan |
 action_result.data.\*.status | string | | Completed |
 action_result.data.\*.startTime | numeric | | 1746535301 |
-action_result.data.\*.finishTime | numric | | 1746535301 |
+action_result.data.\*.finishTime | numeric | | 1746535301 |
 action_result.summary | string | | |
-action_result.summary.total_scans | numeric | | 1 |
-action_result.message | string | | Total Scans: 1 |
+action_result.summary.total_scans | numeric | | 3 |
+action_result.message | string | | Total Scans: 3 |
 summary.total_objects | numeric | | 1 |
 summary.total_objects_successful | numeric | | 1 |
 
 ## action: 'scan information'
 
-Get the scan information for a scan in Scan Results available in Tenable.sc
+Gets the information of a scan in Tenable.sc
 
 Type: **investigate** \
 Read only: **True**
+
+This action result does not contain any sensitive information like password.
 
 #### Action Parameters
 
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**scan_id** | required | ID of the Tenable scan | numeric | |
+**scan_id** | required | ID of the Tenable scan | numeric | `tenablesc scan id` |
 
 #### Action Output
 
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
 action_result.status | string | | success failed |
+action_result.parameter.scan_id | numeric | `tenablesc scan id` | |
 action_result.data.\*.description | string | | Description |
-action_result.data.\*.id | numeric | | 1 |
+action_result.data.\*.id | numeric | `tenablesc scan id` | 1 |
 action_result.data.\*.name | string | | Server Scan |
 action_result.data.\*.status | string | | Completed |
 action_result.data.\*.details | string | | Scan Policy |
@@ -512,7 +519,7 @@ action_result.data.\*.completedIPs | numeric | | 1 |
 action_result.data.\*.scannedIPs | numeric | | 1 |
 action_result.data.\*.agentScanUUID | string | | 12345678-9abc-4ef0-9234-56789abcdef0 |
 action_result.data.\*.startTime | numeric | | 1746530578 |
-action_result.data.\*.finishTime | numeric | | 1746530578 |
+action_result.data.\*.finishTime | numeric | | 1746531065 |
 action_result.data.\*.scanDuration | numeric | | 487 |
 action_result.data.\*.completedChecks | numeric | | 198995 |
 action_result.data.\*.totalChecks | numeric | | 198995 |
@@ -523,6 +530,7 @@ action_result.summary | string | | |
 action_result.message | string | | |
 summary.total_objects | numeric | | 1 |
 summary.total_objects_successful | numeric | | 1 |
+
 ______________________________________________________________________
 
 Auto-generated Splunk SOAR Connector documentation.
