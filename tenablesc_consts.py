@@ -19,6 +19,9 @@ DATETIME_FORMAT = "TZID=UTC:%Y%m%dT%H%M%S"
 REPOSITORY_ID = "repository_id"
 CREDENTIAL_ID = "credential_id"
 REPORT_ID = "report_id"
+SCAN_ID = "scan_id"
+EARLIEST_TIME = "earliest_time"
+LATEST_TIME = "latest_time"
 REPORT_SOURCE = "report_source"
 SCAN_DELAY = 3
 PAGE_SIZE = 100
