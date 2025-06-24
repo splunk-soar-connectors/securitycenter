@@ -1,3 +1,3 @@
 **Unreleased**
 
-* chore(ci): update pre-commit config
+* Added "list scans" and "scan information" actions
