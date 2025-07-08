@@ -1,3 +1,2 @@
 **Unreleased**
-
-* chore(ci): update pre-commit config
+* Fixed input validation for comma-separated IP/Hostname [PAPP-36236]

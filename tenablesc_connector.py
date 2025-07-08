@@ -108,6 +108,24 @@ class SecurityCenterConnector(BaseConnector):
 
         return phantom.APP_SUCCESS, parameter
 
+    def _is_valid_ip_list(self, ip_list_str):
+        """
+        Returns True if all comma-separated IPs in the string are valid IP
+        Returns False if any IP is invalid.
+        """
+        ips = [ip.strip() for ip in ip_list_str.split(",") if ip.strip()]
+
+        return bool(ips) and all(ph_utils.is_ip(ip) for ip in ips)
+
+    def _is_valid_hostname_list(self, hostname_list_str):
+        """
+        Returns True if all comma-separated hostnames in the string are valid hostname.
+        Returns False if any hostname is invalid.
+        """
+        hostnames = [hostname.strip() for hostname in hostname_list_str.split(",") if hostname.strip()]
+
+        return bool(hostnames) and all(ph_utils.is_hostname(hostname) for hostname in hostnames)
+
     def _get_token(self):
         config = self.get_config()
 
@@ -191,6 +209,8 @@ class SecurityCenterConnector(BaseConnector):
         self._good_token = False
 
         config = self.get_config()
+        self.set_validator("ip", self._is_valid_ip_list)
+        self.set_validator("host name", self._is_valid_hostname_list)
 
         self._verify = config["verify_server_cert"]
         self._rest_url = config["base_url"].rstrip("/")
@@ -393,13 +413,6 @@ class SecurityCenterConnector(BaseConnector):
         ip_hostname = ip_hostname.replace("https://", "")
         ip_hostname = ip_hostname.replace("http://", "")
 
-        try:
-            if not phantom.is_hostname(ip_hostname) and not phantom.is_ip(ip_hostname):
-                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
-        except Exception as ex:
-            self._dump_error_log(ex)
-            return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
-
         ret_val, scan_policy_id = self._validate_integer(action_result, param[SCAN_POLICY], "Scan policy ID")
         if phantom.is_fail(ret_val):
             return action_result.get_status()
@@ -463,9 +476,8 @@ class SecurityCenterConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         list_vuln_host = param.get(IP_HOSTNAME)
-        if list_vuln_host and not ph_utils.is_ip(list_vuln_host):
-            if len(list_vuln_host) > 255 or set(INVALID_HOST_CHARS).intersection(list_vuln_host):
-                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities")
+        if list_vuln_host and not ph_utils.is_ip(list_vuln_host) and not ph_utils.is_hostname(list_vuln_host):
+            return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities")
 
         cve_id = param.get("cve_id")
 
