@@ -25,7 +25,6 @@ LATEST_TIME = "latest_time"
 REPORT_SOURCE = "report_source"
 SCAN_DELAY = 3
 PAGE_SIZE = 100
-INVALID_HOST_CHARS = " !\"'@#$%^&*(){};[]|"
 
 TENABLE_ERR_CODE_UNAVAILABLE = "Error code unavailable"
 TENABLE_ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters."
