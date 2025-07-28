@@ -38,6 +38,8 @@ class SecurityCenterConnector(BaseConnector):
     ACTION_ID_UPDATE_GROUP = "update_group"
     ACTION_ID_LIST_REPOSITORY = "list_repositories"
     ACTION_ID_LIST_CREDENTIAL = "list_credentials"
+    ACTION_ID_LIST_SCANS = "list_scans"
+    ACTION_ID_SCAN_INFORMATION = "scan_information"
 
     def __init__(self):
         # Call the BaseConnectors init first
@@ -722,6 +724,53 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
+    def _list_scans(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        earliest_time = param.get(EARLIEST_TIME)
+        if earliest_time:
+            ret_val, earliest_time = self._validate_integer(action_result, param.get(EARLIEST_TIME, 1), "earliest_time")
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+            earliest_time = time.time() - (earliest_time * 60)
+
+        latest_time = param.get(LATEST_TIME)
+        if latest_time:
+            ret_val, latest_time = self._validate_integer(action_result, param.get(LATEST_TIME, 1), "latest_time")
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+            latest_time = time.time() - (latest_time * 60)
+
+        params = {"startTime": earliest_time, "endTime": latest_time, "fields": "name,description,status,startTime,finishTime"}
+
+        ret_val, resp_json = self._make_rest_call("/scanResult", action_result, params=params)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        for scan in resp_json["response"].get("usable", []):
+            action_result.add_data(scan)
+
+        action_result.update_summary({"total_scans": len(resp_json["response"].get("usable"))})
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
+    def _scan_information(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        ret_val, scan_id = self._validate_integer(action_result, param[SCAN_ID], "Scan ID")
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        endpoint = "{}/{}".format("/scanResult", scan_id)
+
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        action_result.add_data(resp_json["response"])
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
     def handle_action(self, param):
         ret_val = None
 
@@ -742,6 +791,10 @@ class SecurityCenterConnector(BaseConnector):
             ret_val = self._update_group(param)
         elif action_id == self.ACTION_ID_LIST_CREDENTIAL:
             ret_val = self._list_credentials(param)
+        elif action_id == self.ACTION_ID_LIST_SCANS:
+            ret_val = self._list_scans(param)
+        elif action_id == self.ACTION_ID_SCAN_INFORMATION:
+            ret_val = self._scan_information(param)
         elif action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity()
 
