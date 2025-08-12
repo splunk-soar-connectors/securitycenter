@@ -38,6 +38,8 @@ class SecurityCenterConnector(BaseConnector):
     ACTION_ID_UPDATE_GROUP = "update_group"
     ACTION_ID_LIST_REPOSITORY = "list_repositories"
     ACTION_ID_LIST_CREDENTIAL = "list_credentials"
+    ACTION_ID_LIST_SCANS = "list_scans"
+    ACTION_ID_SCAN_INFORMATION = "scan_information"
 
     def __init__(self):
         # Call the BaseConnectors init first
@@ -107,6 +109,24 @@ class SecurityCenterConnector(BaseConnector):
                 )
 
         return phantom.APP_SUCCESS, parameter
+
+    def _is_valid_ip_list(self, ip_list_str):
+        """
+        Returns True if all comma-separated IPs in the string are valid IP
+        Returns False if any IP is invalid.
+        """
+        ips = [ip.strip() for ip in ip_list_str.split(",") if ip.strip()]
+
+        return bool(ips) and all(ph_utils.is_ip(ip) for ip in ips)
+
+    def _is_valid_hostname_list(self, hostname_list_str):
+        """
+        Returns True if all comma-separated hostnames in the string are valid hostname.
+        Returns False if any hostname is invalid.
+        """
+        hostnames = [hostname.strip() for hostname in hostname_list_str.split(",") if hostname.strip()]
+
+        return bool(hostnames) and all(ph_utils.is_hostname(hostname) for hostname in hostnames)
 
     def _get_token(self):
         config = self.get_config()
@@ -191,6 +211,8 @@ class SecurityCenterConnector(BaseConnector):
         self._good_token = False
 
         config = self.get_config()
+        self.set_validator("ip", self._is_valid_ip_list)
+        self.set_validator("host name", self._is_valid_hostname_list)
 
         self._verify = config["verify_server_cert"]
         self._rest_url = config["base_url"].rstrip("/")
@@ -393,13 +415,6 @@ class SecurityCenterConnector(BaseConnector):
         ip_hostname = ip_hostname.replace("https://", "")
         ip_hostname = ip_hostname.replace("http://", "")
 
-        try:
-            if not phantom.is_hostname(ip_hostname) and not phantom.is_ip(ip_hostname):
-                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
-        except Exception as ex:
-            self._dump_error_log(ex)
-            return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to scan endpoint.")
-
         ret_val, scan_policy_id = self._validate_integer(action_result, param[SCAN_POLICY], "Scan policy ID")
         if phantom.is_fail(ret_val):
             return action_result.get_status()
@@ -463,9 +478,8 @@ class SecurityCenterConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         list_vuln_host = param.get(IP_HOSTNAME)
-        if list_vuln_host and not ph_utils.is_ip(list_vuln_host):
-            if len(list_vuln_host) > 255 or set(INVALID_HOST_CHARS).intersection(list_vuln_host):
-                return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities")
+        if list_vuln_host and not ph_utils.is_ip(list_vuln_host) and not ph_utils.is_hostname(list_vuln_host):
+            return action_result.set_status(phantom.APP_ERROR, "Invalid IP or Hostname supplied to list vulnerabilities")
 
         cve_id = param.get("cve_id")
 
@@ -710,6 +724,53 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
+    def _list_scans(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        earliest_time = param.get(EARLIEST_TIME)
+        if earliest_time:
+            ret_val, earliest_time = self._validate_integer(action_result, param.get(EARLIEST_TIME, 1), "earliest_time")
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+            earliest_time = time.time() - (earliest_time * 60)
+
+        latest_time = param.get(LATEST_TIME)
+        if latest_time:
+            ret_val, latest_time = self._validate_integer(action_result, param.get(LATEST_TIME, 1), "latest_time")
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
+            latest_time = time.time() - (latest_time * 60)
+
+        params = {"startTime": earliest_time, "endTime": latest_time, "fields": "name,description,status,startTime,finishTime"}
+
+        ret_val, resp_json = self._make_rest_call("/scanResult", action_result, params=params)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        for scan in resp_json["response"].get("usable", []):
+            action_result.add_data(scan)
+
+        action_result.update_summary({"total_scans": len(resp_json["response"].get("usable"))})
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
+    def _scan_information(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+
+        ret_val, scan_id = self._validate_integer(action_result, param[SCAN_ID], "Scan ID")
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        endpoint = "{}/{}".format("/scanResult", scan_id)
+
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result)
+        if phantom.is_fail(ret_val):
+            return action_result.get_status()
+
+        action_result.add_data(resp_json["response"])
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
     def handle_action(self, param):
         ret_val = None
 
@@ -730,6 +791,10 @@ class SecurityCenterConnector(BaseConnector):
             ret_val = self._update_group(param)
         elif action_id == self.ACTION_ID_LIST_CREDENTIAL:
             ret_val = self._list_credentials(param)
+        elif action_id == self.ACTION_ID_LIST_SCANS:
+            ret_val = self._list_scans(param)
+        elif action_id == self.ACTION_ID_SCAN_INFORMATION:
+            ret_val = self._scan_information(param)
         elif action_id == self.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity()
 
