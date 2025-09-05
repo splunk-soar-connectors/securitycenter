@@ -1,9 +1,9 @@
 # Tenable.sc
 
-Publisher: Splunk \
-Connector Version: 2.4.0 \
-Product Vendor: Tenable \
-Product Name: Tenable.sc \
+Publisher: Splunk <br>
+Connector Version: 2.4.0 <br>
+Product Vendor: Tenable <br>
+Product Name: Tenable.sc <br>
 Minimum Product Version: 6.3.0
 
 This app integrates with Tenable's SecurityCenter to provide endpoint-based investigative actions
@@ -33,22 +33,22 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 
 ### Supported Actions
 
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity \
-[scan endpoint](#action-scan-endpoint) - Runs a scan against a specified IP or host \
-[list vulnerabilities](#action-list-vulnerabilities) - Query Tenable.sc for a list of vulnerabilities associated with an IP or host name or CVEID \
-[list policies](#action-list-policies) - Lists the scan policies available in Tenable.sc \
-[list repositories](#action-list-repositories) - Lists the repositories available in Tenable.sc \
-[update asset](#action-update-asset) - Update existing asset with provided fields or create a new one as a 'static' type \
-[update group](#action-update-group) - Update existing group with provided fields \
-[list credentials](#action-list-credentials) - Lists the credentials available in Tenable.sc \
-[list scans](#action-list-scans) - Lists the scan results in Tenable.sc \
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity <br>
+[scan endpoint](#action-scan-endpoint) - Runs a scan against a specified IP or host <br>
+[list vulnerabilities](#action-list-vulnerabilities) - Query Tenable.sc for a list of vulnerabilities associated with an IP or host name or CVEID <br>
+[list policies](#action-list-policies) - Lists the scan policies available in Tenable.sc <br>
+[list repositories](#action-list-repositories) - Lists the repositories available in Tenable.sc <br>
+[update asset](#action-update-asset) - Update existing asset with provided fields or create a new one as a 'static' type <br>
+[update group](#action-update-group) - Update existing group with provided fields <br>
+[list credentials](#action-list-credentials) - Lists the credentials available in Tenable.sc <br>
+[list scans](#action-list-scans) - Lists the scan results in Tenable.sc <br>
 [scan information](#action-scan-information) - Gets the information of a scan in Tenable.sc
 
 ## action: 'test connectivity'
 
 Validate the asset configuration for connectivity
 
-Type: **test** \
+Type: **test** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -63,7 +63,7 @@ No Output
 
 Runs a scan against a specified IP or host
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -186,7 +186,7 @@ action_result.parameter.report_source | string | | |
 
 Query Tenable.sc for a list of vulnerabilities associated with an IP or host name or CVEID
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 If the input IP / host name / CVEID is not available in the server, Action will pass with 0 vulnerability.
@@ -236,7 +236,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Lists the scan policies available in Tenable.sc
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -266,7 +266,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Lists the repositories available in Tenable.sc
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 #### Action Parameters
@@ -295,7 +295,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Update existing asset with provided fields or create a new one as a 'static' type
 
-Type: **generic** \
+Type: **generic** <br>
 Read only: **False**
 
 View Tenable.sc API docs for available fields to update.
@@ -379,7 +379,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Update existing group with provided fields
 
-Type: **generic** \
+Type: **generic** <br>
 Read only: **False**
 
 View Tenable.sc API docs for available fields to update.
@@ -424,7 +424,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Lists the credentials available in Tenable.sc
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 This action result does not contain any sensitive information like password.
@@ -452,7 +452,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Lists the scan results in Tenable.sc
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 This action result does not contain any sensitive information like password.
@@ -487,7 +487,7 @@ summary.total_objects_successful | numeric | | 1 |
 
 Gets the information of a scan in Tenable.sc
 
-Type: **investigate** \
+Type: **investigate** <br>
 Read only: **True**
 
 This action result does not contain any sensitive information like password.
