@@ -46,16 +46,24 @@
             "order": 3
         },
         "username": {
-            "description": "Username",
+            "description": "Username (required if not using API key authentication)",
             "data_type": "string",
-            "required": true,
             "order": 4
         },
         "password": {
-            "description": "Password",
+            "description": "Password (required if not using API key authentication)",
             "data_type": "password",
-            "required": true,
             "order": 5
+        },
+        "access_key": {
+            "description": "API access key (takes precedence over username/password if provided)",
+            "data_type": "password",
+            "order": 6
+        },
+        "secret_key": {
+            "description": "API secret key (takes precedence over username/password if provided)",
+            "data_type": "password",
+            "order": 7
         }
     },
     "actions": [

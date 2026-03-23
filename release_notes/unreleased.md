@@ -1,1 +1,3 @@
 **Unreleased**
+
+* Added API key authentication support. Users can now authenticate using an `access_key` and `secret_key` instead of username/password. API key authentication takes precedence if both methods are configured.
