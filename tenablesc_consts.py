@@ -33,4 +33,4 @@ TENABLE_ERR_CODE_UNAVAILABLE = "Error code unavailable"
 TENABLE_ERR_MSG_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters."
 TENABLE_ERR_INVALID_JSON = 'Error: Invalid JSON format in the "{param}".'
 TENABLE_ERR_INVALID_INT = 'Please provide a valid {msg} integer value in the "{param}"'
-TENABLE_ERR_MISSING_CREDENTIALS = "Please provide either API keys (access_key and secret_key) or username and password"
+TENABLE_ERR_MISSING_CREDENTIALS = "Provide one complete auth method: either both access_key and secret_key, or both username and password."
