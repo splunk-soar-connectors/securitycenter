@@ -28,8 +28,10 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 **verify_server_cert** | optional | boolean | Verify server certificate |
 **retry_count** | optional | numeric | Maximum attempts to retry api call if database locked errors (Default: 5) |
 **retry_wait** | optional | numeric | Delay in seconds between retries (Default: 30) |
-**username** | required | string | Username |
-**password** | required | password | Password |
+**username** | optional | string | Username (required if not using API key authentication) |
+**password** | optional | password | Password (required if not using API key authentication) |
+**access_key** | optional | password | API access key (takes precedence over username/password if provided) |
+**secret_key** | optional | password | API secret key (takes precedence over username/password if provided) |
 
 ### Supported Actions
 
@@ -535,7 +537,7 @@ ______________________________________________________________________
 
 Auto-generated Splunk SOAR Connector documentation.
 
-Copyright 2025 Splunk Inc.
+Copyright 2026 Splunk Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

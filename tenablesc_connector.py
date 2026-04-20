@@ -1,6 +1,6 @@
 # File: tenablesc_connector.py
 #
-# Copyright (c) 2017-2025 Splunk Inc.
+# Copyright (c) 2017-2026 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ class SecurityCenterConnector(BaseConnector):
         self._rest_url = None
         self._retry_count = None
         self._retry_wait = None
+        self._auth_method = None
 
     def _dump_error_log(self, error):
         self.error_print("Exception occurred.", dump_object=error)
@@ -207,6 +208,16 @@ class SecurityCenterConnector(BaseConnector):
 
         return self.set_status(phantom.APP_ERROR, f"Error: Exceeded number of retries to get token; {error_msg}")
 
+    def _init_api_key_session(self, access_key, secret_key):
+        self._session = requests.Session()  # nosemgrep
+        self._session.headers = {
+            "Content-type": "application/json",
+            "accept": "application/json",
+            "x-apikey": f"accesskey={access_key}; secretkey={secret_key};",
+        }
+        self._auth_method = "api_key"
+        return phantom.APP_SUCCESS
+
     def initialize(self):
         self._good_token = False
 
@@ -225,17 +236,28 @@ class SecurityCenterConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return self.get_status()
 
-        status = self._get_token()
-        if phantom.is_fail(status):
-            self.save_progress(self.get_status_message())
-            return self.set_status(phantom.APP_ERROR, "Returning error in initialize")
+        access_key = config.get(ACCESS_KEY)
+        secret_key = config.get(SECRET_KEY)
+        username = config.get("username")
+        password = config.get("password")
+
+        if access_key and secret_key:
+            self._init_api_key_session(access_key, secret_key)
+        elif username and password:
+            self._auth_method = "token"
+            status = self._get_token()
+            if phantom.is_fail(status):
+                self.save_progress(self.get_status_message())
+                return self.set_status(phantom.APP_ERROR, "Returning error in initialize")
+        else:
+            return self.set_status(phantom.APP_ERROR, TENABLE_ERR_MISSING_CREDENTIALS)
 
         return phantom.APP_SUCCESS
 
     def finalize(self):
-        # Logout
+        # Logout (only needed for token-based auth)
         ret_val = phantom.APP_SUCCESS
-        if self._good_token:
+        if self._auth_method == "token" and self._good_token:
             ret_val, resp = self._make_rest_call("/token", self, method="delete")
         return ret_val
 
