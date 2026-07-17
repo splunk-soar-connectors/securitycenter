@@ -258,7 +258,7 @@ class SecurityCenterConnector(BaseConnector):
         # Logout (only needed for token-based auth)
         ret_val = phantom.APP_SUCCESS
         if self._auth_method == "token" and self._good_token:
-            ret_val, resp = self._make_rest_call("/token", self, method="delete")
+            ret_val, _resp = self._make_rest_call("/token", self, method="delete")
         return ret_val
 
     def _process_html_response(self, response, action_result):
@@ -415,7 +415,7 @@ class SecurityCenterConnector(BaseConnector):
 
     def _test_connectivity(self):
         self.save_progress("Checking connectivity to your Tenable.sc instance...")
-        ret_val, resp_json = self._make_rest_call("/user", self)
+        ret_val, _resp_json = self._make_rest_call("/user", self)
         if phantom.is_fail(ret_val):
             self.append_to_message("Test connectivity failed")
             return self.get_status()
