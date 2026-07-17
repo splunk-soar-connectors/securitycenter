@@ -571,19 +571,41 @@ class SecurityCenterConnector(BaseConnector):
         }
 
         final_data = {}
+        total_records = None
+        pages = 0
         while True:
             ret_val, resp_json = self._make_rest_call("/analysis", action_result, json=query_string, method="post")
 
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
 
-            if final_data:
-                final_data["results"].extend(resp_json.get("response", {}).get("results", []))
-            else:
-                final_data = resp_json.get("response", {})
+            response = resp_json.get("response", {})
+            results = response.get("results", [])
 
-            if PAGE_SIZE > len(resp_json.get("response", {}).get("results", [])):
+            if final_data:
+                final_data["results"].extend(results)
+            else:
+                final_data = response
+
+            if total_records is None:
+                try:
+                    total_records = int(response.get("totalRecords"))
+                except (TypeError, ValueError):
+                    total_records = None
+
+            pages += 1
+
+            if PAGE_SIZE > len(results):
                 break
+
+            if total_records is not None and query_string["query"]["endOffset"] >= total_records:
+                break
+
+            if pages >= MAX_ANALYSIS_PAGES:
+                return action_result.set_status(
+                    phantom.APP_ERROR,
+                    f"Server returned more than {MAX_ANALYSIS_PAGES} result pages; aborting to avoid unbounded pagination",
+                )
 
             query_string["query"]["startOffset"] += PAGE_SIZE
             query_string["query"]["endOffset"] += PAGE_SIZE
