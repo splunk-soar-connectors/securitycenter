@@ -1,3 +1,3 @@
 **Unreleased**
 
-* Updated development tooling for connector maintenance.
+* Enabled Tenable.sc server certificate verification by default while preserving an explicit opt-out.
