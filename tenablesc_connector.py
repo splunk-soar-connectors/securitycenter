@@ -258,7 +258,7 @@ class SecurityCenterConnector(BaseConnector):
         # Logout (only needed for token-based auth)
         ret_val = phantom.APP_SUCCESS
         if self._auth_method == "token" and self._good_token:
-            ret_val, resp = self._make_rest_call("/token", self, method="delete")
+            ret_val, _resp = self._make_rest_call("/token", self, method="delete")
         return ret_val
 
     def _process_html_response(self, response, action_result):
@@ -415,7 +415,7 @@ class SecurityCenterConnector(BaseConnector):
 
     def _test_connectivity(self):
         self.save_progress("Checking connectivity to your Tenable.sc instance...")
-        ret_val, resp_json = self._make_rest_call("/user", self)
+        ret_val, _resp_json = self._make_rest_call("/user", self)
         if phantom.is_fail(ret_val):
             self.append_to_message("Test connectivity failed")
             return self.get_status()
@@ -571,19 +571,41 @@ class SecurityCenterConnector(BaseConnector):
         }
 
         final_data = {}
+        total_records = None
+        pages = 0
         while True:
             ret_val, resp_json = self._make_rest_call("/analysis", action_result, json=query_string, method="post")
 
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
 
-            if final_data:
-                final_data["results"].extend(resp_json.get("response", {}).get("results", []))
-            else:
-                final_data = resp_json.get("response", {})
+            response = resp_json.get("response", {})
+            results = response.get("results", [])
 
-            if PAGE_SIZE > len(resp_json.get("response", {}).get("results", [])):
+            if final_data:
+                final_data["results"].extend(results)
+            else:
+                final_data = response
+
+            if total_records is None:
+                try:
+                    total_records = int(response.get("totalRecords"))
+                except (TypeError, ValueError):
+                    total_records = None
+
+            pages += 1
+
+            if PAGE_SIZE > len(results):
                 break
+
+            if total_records is not None and query_string["query"]["endOffset"] >= total_records:
+                break
+
+            if pages >= MAX_ANALYSIS_PAGES:
+                return action_result.set_status(
+                    phantom.APP_ERROR,
+                    f"Server returned more than {MAX_ANALYSIS_PAGES} result pages; aborting to avoid unbounded pagination",
+                )
 
             query_string["query"]["startOffset"] += PAGE_SIZE
             query_string["query"]["endOffset"] += PAGE_SIZE

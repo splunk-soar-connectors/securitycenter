@@ -25,6 +25,8 @@ LATEST_TIME = "latest_time"
 REPORT_SOURCE = "report_source"
 SCAN_DELAY = 3
 PAGE_SIZE = 100
+# Bound list-vulnerabilities work and memory if an upstream ignores offsets.
+MAX_ANALYSIS_PAGES = 10000
 
 ACCESS_KEY = "access_key"
 SECRET_KEY = "secret_key"  # pragma: allowlist secret
