@@ -1,7 +1,7 @@
 # Tenable.sc
 
 Publisher: Splunk <br>
-Connector Version: 2.5.0 <br>
+Connector Version: 3.0.0 <br>
 Product Vendor: Tenable <br>
 Product Name: Tenable.sc <br>
 Minimum Product Version: 6.3.0
