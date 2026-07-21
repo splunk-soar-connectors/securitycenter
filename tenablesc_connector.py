@@ -330,7 +330,7 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_ERROR, message), None
 
-    def _make_rest_call(self, endpoint, action_result, params={}, json={}, method="get"):
+    def _make_rest_call(self, endpoint, action_result, params={}, json={}, method="get", retry=True):
         url = f"{self._rest_url}/rest{endpoint}"
 
         try:
@@ -344,16 +344,17 @@ class SecurityCenterConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, f"Handled exception: {error_msg}"), None
 
         error_msg = None
-        for retry in range(1, self._retry_count + 1):
-            if retry > 1:
+        attempts = self._retry_count if retry else 1
+        for attempt in range(1, attempts + 1):
+            if attempt > 1:
                 self.save_progress("Failed.")
                 self.save_progress(f"Waiting for {self._retry_wait} seconds until retry")
                 time.sleep(self._retry_wait)
 
-            self.save_progress(f"Making REST call...; try #{retry}")
+            self.save_progress(f"Making REST call...; try #{attempt}")
             r = None
             try:
-                r = request_func(url, params=params, json=json, verify=self._verify)  # nosemgrep
+                r = request_func(url, params=params, json=json, verify=self._verify, timeout=30)  # nosemgrep
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
@@ -486,7 +487,7 @@ class SecurityCenterConnector(BaseConnector):
         if report_id:
             scan_data["reports"].append({"id": report_id, "reportSource": report_source})
 
-        ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post")
+        ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post", retry=False)
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()
@@ -688,18 +689,25 @@ class SecurityCenterConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        for sc_asset in resp_json["response"]["manageable"] + resp_json["response"]["usable"]:
-            if sc_asset["name"] == asset_name:
-                self.save_progress("Asset found, attempting to update it.")
-                endpoint = "{}/{}".format(endpoint, sc_asset["id"])
+        asset_ids = {
+            str(sc_asset["id"])
+            for sc_asset in resp_json["response"]["manageable"] + resp_json["response"]["usable"]
+            if sc_asset["name"] == asset_name
+        }
+        if len(asset_ids) > 1:
+            return action_result.set_status(phantom.APP_ERROR, f'Multiple assets named "{asset_name}" found; refusing an ambiguous update.')
 
-                ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
-                if phantom.is_fail(ret_val):
-                    return action_result.get_status()
+        if asset_ids:
+            self.save_progress("Asset found, attempting to update it.")
+            endpoint = f"{endpoint}/{asset_ids.pop()}"
 
-                action_result.add_data(resp_json)
+            ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch", retry=False)
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
-                return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated asset.")
+            action_result.add_data(resp_json)
+
+            return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated asset.")
 
         self.save_progress("Asset does not exist, attempting to create it.")
         # Asset doesn't exist, creating new one with provided name.
@@ -708,7 +716,7 @@ class SecurityCenterConnector(BaseConnector):
         if "name" not in update_fields:
             update_fields["name"] = asset_name
 
-        ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="post")
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="post", retry=False)
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
@@ -737,18 +745,21 @@ class SecurityCenterConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        for sc_group in resp_json["response"]:
-            if sc_group["name"] == group_name:
-                self.save_progress("Group found, attempting to update it.")
-                endpoint = "{}/{}".format(endpoint, sc_group["id"])
+        group_ids = {str(sc_group["id"]) for sc_group in resp_json["response"] if sc_group["name"] == group_name}
+        if len(group_ids) > 1:
+            return action_result.set_status(phantom.APP_ERROR, f'Multiple groups named "{group_name}" found; refusing an ambiguous update.')
 
-                ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
-                if phantom.is_fail(ret_val):
-                    return action_result.get_status()
+        if group_ids:
+            self.save_progress("Group found, attempting to update it.")
+            endpoint = f"{endpoint}/{group_ids.pop()}"
 
-                action_result.add_data(resp_json)
+            ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch", retry=False)
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
-                return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated group.")
+            action_result.add_data(resp_json)
+
+            return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated group.")
 
         # Group does not exist
         message = f'Group "{group_name}" not found.'
