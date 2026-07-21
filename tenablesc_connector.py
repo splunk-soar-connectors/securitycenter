@@ -330,7 +330,7 @@ class SecurityCenterConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_ERROR, message), None
 
-    def _make_rest_call(self, endpoint, action_result, params={}, json={}, method="get"):
+    def _make_rest_call(self, endpoint, action_result, params={}, json={}, method="get", retry=True):
         url = f"{self._rest_url}/rest{endpoint}"
 
         try:
@@ -344,16 +344,17 @@ class SecurityCenterConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, f"Handled exception: {error_msg}"), None
 
         error_msg = None
-        for retry in range(1, self._retry_count + 1):
-            if retry > 1:
+        attempts = self._retry_count if retry else 1
+        for attempt in range(1, attempts + 1):
+            if attempt > 1:
                 self.save_progress("Failed.")
                 self.save_progress(f"Waiting for {self._retry_wait} seconds until retry")
                 time.sleep(self._retry_wait)
 
-            self.save_progress(f"Making REST call...; try #{retry}")
+            self.save_progress(f"Making REST call...; try #{attempt}")
             r = None
             try:
-                r = request_func(url, params=params, json=json, verify=self._verify)  # nosemgrep
+                r = request_func(url, params=params, json=json, verify=self._verify, timeout=30)  # nosemgrep
                 self.save_progress("Request Completed")
 
             except requests.exceptions.InvalidSchema:
@@ -486,7 +487,7 @@ class SecurityCenterConnector(BaseConnector):
         if report_id:
             scan_data["reports"].append({"id": report_id, "reportSource": report_source})
 
-        ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post")
+        ret_val, resp_json = self._make_rest_call("/scan", action_result, json=scan_data, method="post", retry=False)
 
         if phantom.is_fail(ret_val):
             return action_result.get_status()
@@ -700,7 +701,7 @@ class SecurityCenterConnector(BaseConnector):
             self.save_progress("Asset found, attempting to update it.")
             endpoint = f"{endpoint}/{asset_ids.pop()}"
 
-            ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
+            ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch", retry=False)
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
 
@@ -715,7 +716,7 @@ class SecurityCenterConnector(BaseConnector):
         if "name" not in update_fields:
             update_fields["name"] = asset_name
 
-        ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="post")
+        ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="post", retry=False)
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
@@ -752,7 +753,7 @@ class SecurityCenterConnector(BaseConnector):
             self.save_progress("Group found, attempting to update it.")
             endpoint = f"{endpoint}/{group_ids.pop()}"
 
-            ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
+            ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch", retry=False)
             if phantom.is_fail(ret_val):
                 return action_result.get_status()
 
