@@ -688,18 +688,25 @@ class SecurityCenterConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        for sc_asset in resp_json["response"]["manageable"] + resp_json["response"]["usable"]:
-            if sc_asset["name"] == asset_name:
-                self.save_progress("Asset found, attempting to update it.")
-                endpoint = "{}/{}".format(endpoint, sc_asset["id"])
+        asset_ids = {
+            str(sc_asset["id"])
+            for sc_asset in resp_json["response"]["manageable"] + resp_json["response"]["usable"]
+            if sc_asset["name"] == asset_name
+        }
+        if len(asset_ids) > 1:
+            return action_result.set_status(phantom.APP_ERROR, f'Multiple assets named "{asset_name}" found; refusing an ambiguous update.')
 
-                ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
-                if phantom.is_fail(ret_val):
-                    return action_result.get_status()
+        if asset_ids:
+            self.save_progress("Asset found, attempting to update it.")
+            endpoint = f"{endpoint}/{asset_ids.pop()}"
 
-                action_result.add_data(resp_json)
+            ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
-                return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated asset.")
+            action_result.add_data(resp_json)
+
+            return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated asset.")
 
         self.save_progress("Asset does not exist, attempting to create it.")
         # Asset doesn't exist, creating new one with provided name.
@@ -737,18 +744,21 @@ class SecurityCenterConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return action_result.get_status()
 
-        for sc_group in resp_json["response"]:
-            if sc_group["name"] == group_name:
-                self.save_progress("Group found, attempting to update it.")
-                endpoint = "{}/{}".format(endpoint, sc_group["id"])
+        group_ids = {str(sc_group["id"]) for sc_group in resp_json["response"] if sc_group["name"] == group_name}
+        if len(group_ids) > 1:
+            return action_result.set_status(phantom.APP_ERROR, f'Multiple groups named "{group_name}" found; refusing an ambiguous update.')
 
-                ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
-                if phantom.is_fail(ret_val):
-                    return action_result.get_status()
+        if group_ids:
+            self.save_progress("Group found, attempting to update it.")
+            endpoint = f"{endpoint}/{group_ids.pop()}"
 
-                action_result.add_data(resp_json)
+            ret_val, resp_json = self._make_rest_call(endpoint, action_result, json=update_fields, method="patch")
+            if phantom.is_fail(ret_val):
+                return action_result.get_status()
 
-                return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated group.")
+            action_result.add_data(resp_json)
+
+            return action_result.set_status(phantom.APP_SUCCESS, "Successfully updated group.")
 
         # Group does not exist
         message = f'Group "{group_name}" not found.'
